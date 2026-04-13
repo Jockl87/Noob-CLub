@@ -54,7 +54,18 @@
                 <div class="space-y-3 mb-6 bg-black/40 p-4 rounded-lg">
                     <input type="text" id="newName" placeholder="Name" class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white outline-none focus:border-orange-500 transition text-white">
                     <div class="flex items-center justify-between">
-                        <span class="text-sm text-gray-300">FaceIt Level:</span>
+                        
+                        <!-- NEUES LEVEL FELD MIT INFO TOOLTIP -->
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm text-gray-300">Level:</span>
+                            <div class="group relative flex items-center justify-center cursor-help">
+                                <span class="text-gray-400 hover:text-blue-400 text-[10px] font-black border border-gray-500 hover:border-blue-400 rounded-full w-4 h-4 flex items-center justify-center transition">i</span>
+                                <div class="absolute bottom-full left-0 mb-2 w-56 p-2 bg-gray-900 border border-gray-600 text-gray-300 text-[10px] rounded shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 leading-tight">
+                                    Unser internes Rating: Die stärksten Spieler der Runde setzen das Max-Level (10). Davon ausgehend skalieren wir alle anderen Spieler nach unten.
+                                </div>
+                            </div>
+                        </div>
+
                         <input type="number" id="newSkill" value="3" min="1" max="10" class="w-20 p-2 rounded bg-gray-800 border border-gray-600 text-center text-orange-400 font-bold">
                     </div>
                     <button onclick="addPlayer()" class="w-full bg-green-600 hover:bg-green-500 py-2 rounded font-bold uppercase text-xs">Hinzufügen</button>
