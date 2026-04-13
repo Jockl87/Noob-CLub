@@ -8,7 +8,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { 
-            /* HIER IST DIE ÄNDERUNG: Sucht jetzt nach bg.png */
             background: #0f172a url('bg.png') no-repeat center center fixed; 
             background-size: cover;
             color: white; 
@@ -112,6 +111,9 @@
                 </div>
                 
                 <div id="resultButtons" class="mt-4 pt-4 border-t border-gray-700 shrink-0 hidden">
+                    <button onclick="generateTeams()" class="w-full bg-orange-500 hover:bg-orange-400 text-white font-black py-2 rounded uppercase text-[10px] tracking-widest transition shadow-lg mb-2 border border-orange-400">
+                        🎲 Teams neu mischen (Fair)
+                    </button>
                     <button onclick="copyToDiscord()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded uppercase text-[10px] tracking-widest transition shadow-lg mb-2">
                         Teams für Discord kopieren
                     </button>
@@ -205,17 +207,39 @@
         let selected = Array.from(checks).map(c => ({ name: c.dataset.name, skill: parseInt(c.dataset.skill) }));
         if (selected.length < 2) return alert("Wähle mindestens 2 Spieler!");
 
-        selected.sort((a,b) => b.skill - a.skill);
-        teamA = []; teamB = [];
-        let sA = 0, sB = 0;
-        selected.forEach(p => {
-            if (sA <= sB) { teamA.push(p); sA += p.skill; }
-            else { teamB.push(p); sB += p.skill; }
-        });
+        // MONTE CARLO BALANCING
+        let bestDiff = Infinity;
+        let candidates = [];
 
-        const shuffled = [...funnyNamesPool].sort(() => 0.5 - Math.random());
-        teamAName = shuffled[0];
-        teamBName = shuffled[1];
+        // Generiere 500 zufällige Setups und finde die fairsten
+        for (let i = 0; i < 500; i++) {
+            let shuffled = [...selected].sort(() => 0.5 - Math.random());
+            let tA = [], tB = [], sA = 0, sB = 0;
+            
+            shuffled.forEach(p => {
+                if (sA <= sB) { tA.push(p); sA += p.skill; }
+                else { tB.push(p); sB += p.skill; }
+            });
+            
+            let diff = Math.abs(sA - sB);
+            
+            if (diff < bestDiff) {
+                bestDiff = diff;
+                candidates = [{ tA, tB }];
+            } else if (diff === bestDiff) {
+                candidates.push({ tA, tB });
+            }
+        }
+
+        // Wähle zufällig eines der allerbesten Setups aus
+        let chosen = candidates[Math.floor(Math.random() * candidates.length)];
+        teamA = chosen.tA;
+        teamB = chosen.tB;
+
+        // Namen neu auswürfeln
+        const shuffledNames = [...funnyNamesPool].sort(() => 0.5 - Math.random());
+        teamAName = shuffledNames[0];
+        teamBName = shuffledNames[1];
 
         document.getElementById('resultButtons').classList.remove('hidden');
         displayTeams();
