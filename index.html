@@ -182,7 +182,6 @@
             else { teamB.push(p); sB += p.skill; }
         });
 
-        // Namen direkt aus dem Pool vergeben
         const shuffled = [...funnyNamesPool].sort(() => 0.5 - Math.random());
         teamAName = shuffled[0];
         teamBName = shuffled[1];
@@ -210,7 +209,14 @@
         text += `\n**${teamBName.toUpperCase()} (Pwr: ${sumB})**\n`;
         teamB.forEach(p => text += `• ${p.name} (Lvl ${p.skill})\n`);
         text += `\n*Differenz: ${Math.abs(sumA - sumB)}*`;
+        text += `\n\n**Nicht vergessen: !ready eingeben zum Starten!**`;
+        
         navigator.clipboard.writeText(text).then(() => alert("Teams für Discord kopiert!"));
+    }
+
+    function copyConnect() {
+        const cmd = "connect montagsrunde.noob.club:26807; password Heddesheim";
+        navigator.clipboard.writeText(cmd).then(() => alert("Connect-Befehl kopiert!"));
     }
 
     function displayTeams() {
@@ -244,11 +250,15 @@
 
             <div class="text-center p-2 bg-black/60 rounded border border-gray-700 mt-4 shadow-inner">
                 <span class="text-[10px] text-gray-500 uppercase tracking-widest block mb-1">Differenz:</span>
-                <span class="font-black text-xl text-orange-500">${Math.abs(sumA - sumB)}</span>
+                <span class="ml-2 font-black text-xl text-orange-500">${Math.abs(sumA - sumB)}</span>
             </div>
 
             <button onclick="copyToDiscord()" class="w-full mt-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded uppercase text-[10px] tracking-widest transition shadow-lg">
                 Teams für Discord kopieren
+            </button>
+            
+            <button onclick="copyConnect()" class="w-full mt-2 bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 rounded uppercase text-[10px] tracking-widest transition shadow-lg border border-gray-600">
+                Server Connect Befehl kopieren
             </button>
         `;
     }
