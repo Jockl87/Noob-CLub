@@ -8,7 +8,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { 
-            /* Hintergrundbild von einer sehr stabilen Quelle (Unsplash Gaming) */
             background: #0f172a url('https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=2070&auto=format&fit=crop') no-repeat center center fixed; 
             background-size: cover;
             color: white; 
@@ -16,7 +15,7 @@
             margin: 0;
         }
         .overlay {
-            background-color: rgba(15, 23, 42, 0.85); /* Dunkler Schleier */
+            background-color: rgba(15, 23, 42, 0.85);
             min-height: 100vh;
             width: 100%;
         }
@@ -62,22 +61,19 @@
                 </div>
 
                 <div id="playerPool" class="space-y-2 max-h-[350px] overflow-y-auto pr-2">
-                    <!-- JS lädt hier -->
                 </div>
             </div>
 
-            <!-- 2. ANWESENHEIT (MIT DEN BUTTONS) -->
+            <!-- 2. ANWESENHEIT -->
             <div class="card">
                 <h2 class="text-xl font-bold mb-4 border-b border-gray-600 pb-2 text-orange-400 text-center uppercase">Heute am Start?</h2>
                 
-                <!-- BUTTONS: ALLE AUSWÄHLEN / LEEREN -->
                 <div class="flex gap-2 mb-4">
                     <button onclick="toggleAll(true)" class="flex-1 bg-blue-600 hover:bg-blue-500 text-[10px] font-black py-2 rounded uppercase tracking-widest transition">Alle auswählen</button>
                     <button onclick="toggleAll(false)" class="flex-1 bg-gray-700 hover:bg-gray-600 text-[10px] font-black py-2 rounded uppercase tracking-widest transition">Auswahl leeren</button>
                 </div>
 
                 <div id="activeSelection" class="space-y-1 max-h-[400px] overflow-y-auto pr-1">
-                    <!-- Checkboxen -->
                 </div>
                 
                 <button onclick="generateTeams()" class="w-full mt-6 bg-orange-600 hover:bg-orange-500 text-white font-black py-4 rounded-xl shadow-2xl transition transform active:scale-95 text-xl uppercase tracking-tighter">
@@ -98,7 +94,6 @@
 </div>
 
 <script>
-    // DEINE DATEN
     const SUPABASE_URL = 'https://ldsugaxwovooetmjegwt.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_RAVKlH8iHbbSxcd-7SV2qA_fj1ZkxOE';
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -160,7 +155,6 @@
         });
     }
 
-    // DIE WICHTIGE FUNKTION FÜR ALLE AUSWÄHLEN
     function toggleAll(status) {
         const checkboxes = document.querySelectorAll('.p-check');
         checkboxes.forEach(cb => cb.checked = status);
@@ -190,6 +184,27 @@
             teamA.push(teamB.splice(idx, 1)[0]);
         }
         displayTeams();
+    }
+
+    // NEUE FUNKTION FÜR DISCORD KOPIEREN
+    function copyToDiscord() {
+        if (teamA.length === 0 || teamB.length === 0) return;
+        
+        const sumA = teamA.reduce((a, b) => a + b.skill, 0);
+        const sumB = teamB.reduce((a, b) => a + b.skill, 0);
+        
+        let text = `**--- Noob Club Teams ---**\n\n`;
+        text += `**TEAM A (Pwr: ${sumA})**\n`;
+        teamA.forEach(p => text += `• ${p.name} (Lvl ${p.skill})\n`);
+        
+        text += `\n**TEAM B (Pwr: ${sumB})**\n`;
+        teamB.forEach(p => text += `• ${p.name} (Lvl ${p.skill})\n`);
+        
+        text += `\n*Differenz: ${Math.abs(sumA - sumB)}*`;
+
+        navigator.clipboard.writeText(text).then(() => {
+            alert("Teams für Discord kopiert!");
+        });
     }
 
     function displayTeams() {
@@ -225,6 +240,10 @@
                 <span class="text-[10px] text-gray-500 uppercase tracking-widest">Differenz:</span>
                 <span class="ml-2 font-black text-xl text-orange-500">${Math.abs(sumA - sumB)}</span>
             </div>
+
+            <button onclick="copyToDiscord()" class="w-full mt-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded uppercase text-[10px] tracking-widest transition shadow-lg">
+                Teams für Discord kopieren
+            </button>
         `;
     }
 
