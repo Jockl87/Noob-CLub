@@ -8,28 +8,37 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { 
-            background: url('https://images.alphacoders.com/133/1331243.png') no-repeat center center fixed; 
+            /* Neues Hintergrundbild (direkter Link) */
+            background: url('https://wallpaperaccess.com/full/9162973.jpg') no-repeat center center fixed; 
             background-size: cover;
             color: white; 
             font-family: 'Segoe UI', sans-serif; 
+            margin: 0;
+            padding: 0;
         }
-        /* Dunkles Overlay für bessere Lesbarkeit */
+        /* Dunkles Overlay für bessere Lesbarkeit der Karten */
         .overlay {
-            background-color: rgba(15, 23, 42, 0.85);
+            background-color: rgba(10, 15, 25, 0.8);
             min-height: 100vh;
+            width: 100%;
         }
         .card { 
-            background-color: rgba(30, 41, 59, 0.8); 
-            backdrop-filter: blur(8px);
+            background-color: rgba(30, 41, 59, 0.7); 
+            backdrop-filter: blur(12px);
             border-radius: 12px; 
             padding: 20px; 
-            box-shadow: 0 10px 15px rgba(0,0,0,0.5); 
-            border: 1px solid rgba(74, 85, 104, 0.5); 
+            box-shadow: 0 15px 25px rgba(0,0,0,0.6); 
+            border: 1px solid rgba(255, 255, 255, 0.1); 
         }
         .btn-action { transition: all 0.2s; cursor: pointer; opacity: 0.8; }
-        .btn-action:hover { opacity: 1; transform: scale(1.1); }
-        .team-a { border-left: 4px solid #3b82f6; }
-        .team-b { border-left: 4px solid #f97316; }
+        .btn-action:hover { opacity: 1; transform: scale(1.2); }
+        .team-a { border-top: 4px solid #3b82f6; }
+        .team-b { border-top: 4px solid #f97316; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+        ::-webkit-scrollbar-thumb { background: #4a5568; border-radius: 10px; }
     </style>
 </head>
 <body>
@@ -38,50 +47,53 @@
     <div class="max-w-7xl mx-auto">
         
         <!-- Header -->
-        <div class="text-center mb-10">
-            <h1 class="text-6xl font-black text-orange-500 uppercase tracking-tighter drop-shadow-2xl">Noob Club</h1>
-            <p class="text-blue-400 font-mono text-lg tracking-[0.3em] mt-2 uppercase font-bold">Montagsrunde Live Balancer</p>
+        <div class="text-center mb-12">
+            <h1 class="text-7xl font-black text-orange-500 uppercase tracking-tighter drop-shadow-2xl mb-1">Noob Club</h1>
+            <p class="text-blue-400 font-mono text-lg tracking-[0.4em] uppercase font-bold opacity-80">Montagsrunde Team Balancer</p>
         </div>
 
         <div class="grid lg:grid-cols-3 gap-8">
             
             <!-- 1. SPIELER VERWALTEN -->
             <div class="card">
-                <h2 class="text-xl font-bold mb-4 border-b border-gray-600 pb-2 text-orange-400 flex justify-between">
+                <h2 class="text-xl font-bold mb-4 border-b border-gray-600 pb-2 text-orange-400 flex justify-between items-center">
                     <span>Spieler-Pool</span>
-                    <span id="playerCount" class="text-sm bg-blue-600 px-2 py-0.5 rounded">0</span>
+                    <span id="playerCount" class="text-xs bg-blue-600 px-2 py-0.5 rounded text-white">0</span>
                 </h2>
                 
-                <div class="space-y-3 mb-6 bg-black/40 p-4 rounded-lg">
-                    <input type="text" id="newName" placeholder="Neuer Spieler Name" class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white outline-none focus:border-orange-500">
+                <div class="space-y-3 mb-6 bg-black/40 p-4 rounded-lg border border-white/5">
+                    <input type="text" id="newName" placeholder="Neuer Spieler Name" class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white outline-none focus:border-orange-500 transition">
                     <div class="flex items-center justify-between">
                         <span class="text-sm text-gray-300">FaceIt Level:</span>
                         <input type="number" id="newSkill" value="3" min="1" max="10" class="w-20 p-2 rounded bg-gray-800 border border-gray-600 text-center font-bold text-orange-400">
                     </div>
-                    <button onclick="addPlayer()" class="w-full bg-green-600 hover:bg-green-500 py-2 rounded font-bold transition uppercase text-sm">Hinzufügen</button>
+                    <button onclick="addPlayer()" class="w-full bg-green-600 hover:bg-green-500 py-2 rounded font-bold transition uppercase text-sm shadow-lg active:translate-y-0.5">Hinzufügen</button>
                 </div>
 
-                <div id="playerPool" class="space-y-2 max-h-[400px] overflow-y-auto pr-2 text-sm">
-                    <!-- Liste -->
+                <div id="playerPool" class="space-y-2 max-h-[350px] overflow-y-auto pr-2">
+                    <!-- Liste der Club-Mitglieder -->
                 </div>
             </div>
 
             <!-- 2. ANWESENHEIT -->
-            <div class="card text-center">
-                <h2 class="text-xl font-bold mb-4 border-b border-gray-600 pb-2 text-orange-400">Heute dabei?</h2>
-                <div id="activeSelection" class="space-y-1 max-h-[500px] overflow-y-auto pr-1 text-left">
+            <div class="card">
+                <h2 class="text-xl font-bold mb-4 border-b border-gray-600 pb-2 text-orange-400">Anwesenheit</h2>
+                <div id="activeSelection" class="space-y-1 max-h-[480px] overflow-y-auto pr-1">
                     <!-- Checkboxen -->
                 </div>
-                <button onclick="generateTeams()" class="w-full mt-6 bg-orange-600 hover:bg-orange-500 text-white font-black py-4 rounded shadow-xl transition transform active:scale-95 text-xl tracking-widest uppercase">
+                <button onclick="generateTeams()" class="w-full mt-6 bg-orange-600 hover:bg-orange-500 text-white font-black py-4 rounded-xl shadow-2xl transition transform active:scale-95 text-xl tracking-widest uppercase">
                     TEAMS GENERIEREN
                 </button>
             </div>
 
             <!-- 3. ERGEBNIS & MANUELLER TAUSCH -->
             <div class="card">
-                <h2 class="text-xl font-bold mb-4 border-b border-gray-600 pb-2 text-orange-400">Ergebnis</h2>
+                <h2 class="text-xl font-bold mb-4 border-b border-gray-600 pb-2 text-orange-400">Team-Vorschlag</h2>
                 <div id="result" class="space-y-4">
-                    <p class="text-gray-500 italic text-center py-20">Noch keine Teams generiert.</p>
+                    <div class="py-20 text-center">
+                        <span class="text-5xl opacity-20 block mb-4">⚔️</span>
+                        <p class="text-gray-500 italic">Wähle Spieler aus und klicke auf Generieren.</p>
+                    </div>
                 </div>
             </div>
 
@@ -90,6 +102,7 @@
 </div>
 
 <script>
+    // DEINE DATEN
     const SUPABASE_URL = 'https://ldsugaxwovooetmjegwt.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_RAVKlH8iHbbSxcd-7SV2qA_fj1ZkxOE';
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -111,8 +124,8 @@
         n.value = ""; fetchPlayers();
     }
 
-    async function deletePlayer(id) {
-        if (confirm("Spieler wirklich löschen?")) {
+    async function deletePlayer(id, name) {
+        if (confirm(`${name} wirklich löschen?`)) {
             await _supabase.from('players').delete().eq('id', id);
             fetchPlayers();
         }
@@ -139,19 +152,19 @@
 
         players.forEach((p) => {
             pool.innerHTML += `
-                <div class="flex justify-between items-center bg-gray-900/60 p-2 rounded border border-gray-700">
-                    <span>${p.name} <span class="text-orange-400">(Lvl ${p.skill})</span></span>
-                    <div class="flex gap-3">
-                        <span onclick="editPlayer(${p.id}, '${p.name}', ${p.skill})" class="btn-action text-blue-400">✎</span>
-                        <span onclick="deletePlayer(${p.id})" class="btn-action text-red-500">🗑</span>
+                <div class="flex justify-between items-center bg-gray-900/60 p-2 rounded border border-gray-700 text-sm">
+                    <span class="font-medium">${p.name} <span class="text-orange-400 font-bold ml-1">Lvl ${p.skill}</span></span>
+                    <div class="flex gap-4">
+                        <span onclick="editPlayer(${p.id}, '${p.name}', ${p.skill})" class="btn-action text-blue-400" title="Bearbeiten">✎</span>
+                        <span onclick="deletePlayer(${p.id}, '${p.name}')" class="btn-action text-red-500" title="Löschen">🗑</span>
                     </div>
                 </div>`;
             
             select.innerHTML += `
-                <label class="flex items-center p-2 hover:bg-white/10 rounded cursor-pointer transition border-b border-white/5">
-                    <input type="checkbox" class="w-5 h-5 mr-3 accent-orange-500 p-check" data-name="${p.name}" data-skill="${p.skill}">
-                    <span class="flex-grow text-sm font-semibold">${p.name}</span>
-                    <span class="text-xs font-bold text-orange-400">Lvl ${p.skill}</span>
+                <label class="flex items-center p-2.5 hover:bg-white/10 rounded-lg cursor-pointer transition border-b border-white/5">
+                    <input type="checkbox" class="w-5 h-5 mr-4 accent-orange-500 p-check" data-name="${p.name}" data-skill="${p.skill}">
+                    <span class="flex-grow text-sm font-semibold tracking-wide">${p.name}</span>
+                    <span class="bg-black/50 px-2 py-0.5 rounded text-orange-400 font-mono text-xs font-bold border border-white/10 text-right">LVL ${p.skill}</span>
                 </label>`;
         });
     }
@@ -162,7 +175,6 @@
         
         if (selected.length < 2) return alert("Wähle mindestens 2 Spieler!");
 
-        // Automatischer Balance-Algorithmus (Greedy)
         selected.sort((a,b) => b.skill - a.skill);
         teamA = []; teamB = [];
         let sA = 0, sB = 0;
@@ -175,7 +187,6 @@
         displayTeams();
     }
 
-    // Funktion zum manuellen Verschieben
     function swapPlayer(name, fromTeam) {
         if (fromTeam === 'A') {
             const idx = teamA.findIndex(p => p.name === name);
@@ -193,31 +204,32 @@
         const sumB = teamB.reduce((a, b) => a + b.skill, 0);
 
         const renderList = (list, teamLabel) => list.map(p => `
-            <li class="flex justify-between items-center bg-black/40 p-2 rounded my-1 border border-white/5 text-sm">
-                <span>${p.name} <span class="text-gray-500 text-xs">(Lvl ${p.skill})</span></span>
-                <button onclick="swapPlayer('${p.name}', '${teamLabel}')" class="text-lg hover:text-orange-500 transition" title="In das andere Team verschieben">⇄</button>
+            <li class="flex justify-between items-center bg-black/30 p-2 rounded my-1 border border-white/5 text-sm">
+                <span><span class="text-orange-400 font-bold mr-2 text-xs">${p.skill}</span> ${p.name}</span>
+                <button onclick="swapPlayer('${p.name}', '${teamLabel}')" class="text-lg hover:text-orange-500 transition px-2" title="Wechseln">⇄</button>
             </li>
         `).join('');
 
         resDiv.innerHTML = `
-            <div class="team-a p-3 bg-blue-900/20 rounded-lg">
-                <div class="flex justify-between font-bold text-blue-400 mb-2 uppercase tracking-widest italic">
+            <div class="team-a p-4 bg-blue-600/10 rounded-xl mb-4 shadow-inner">
+                <div class="flex justify-between font-black text-blue-400 mb-3 uppercase tracking-tighter italic text-lg">
                     <span>Team A</span>
-                    <span>Power: ${sumA}</span>
+                    <span class="text-white bg-blue-600/40 px-2 rounded-md">Power: ${sumA}</span>
                 </div>
                 <ul>${renderList(teamA, 'A')}</ul>
             </div>
             
-            <div class="team-b p-3 bg-orange-900/20 rounded-lg">
-                <div class="flex justify-between font-bold text-orange-400 mb-2 uppercase tracking-widest italic">
+            <div class="team-b p-4 bg-orange-600/10 rounded-xl mb-4 shadow-inner">
+                <div class="flex justify-between font-black text-orange-400 mb-3 uppercase tracking-tighter italic text-lg">
                     <span>Team B</span>
-                    <span>Power: ${sumB}</span>
+                    <span class="text-white bg-orange-600/40 px-2 rounded-md">Power: ${sumB}</span>
                 </div>
                 <ul>${renderList(teamB, 'B')}</ul>
             </div>
 
-            <div class="text-center text-xs font-bold py-2 bg-black/50 rounded border border-gray-700">
-                DIFFERENZ: ${Math.abs(sumA - sumB)} PUNKTE
+            <div class="text-center p-2 bg-black/60 rounded-lg border border-gray-700">
+                <span class="text-xs text-gray-500 uppercase tracking-widest">Skill-Differenz:</span>
+                <span class="ml-2 font-bold text-orange-500">${Math.abs(sumA - sumB)}</span>
             </div>
         `;
     }
