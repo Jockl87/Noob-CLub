@@ -8,36 +8,28 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { 
-            /* Neuer Versuch für das Hintergrundbild - ein sehr zuverlässiger CDN Link */
-            background: #0f172a url('https://raw.githubusercontent.com/sh4rk0/cs2-balancer-bg/main/cs2_bg.jpg') no-repeat center center fixed; 
+            /* Hintergrundbild von einer sehr stabilen Quelle (Unsplash Gaming) */
+            background: #0f172a url('https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=2070&auto=format&fit=crop') no-repeat center center fixed; 
             background-size: cover;
             color: white; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            font-family: 'Segoe UI', Roboto, sans-serif; 
             margin: 0;
-            padding: 0;
         }
-        /* Dunkles Overlay, damit man alles gut lesen kann */
         .overlay {
-            background-color: rgba(15, 23, 42, 0.85);
+            background-color: rgba(15, 23, 42, 0.85); /* Dunkler Schleier */
             min-height: 100vh;
             width: 100%;
         }
         .card { 
-            background-color: rgba(30, 41, 59, 0.75); 
+            background-color: rgba(30, 41, 59, 0.8); 
             backdrop-filter: blur(10px);
             border-radius: 12px; 
             padding: 20px; 
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); 
             border: 1px solid rgba(255, 255, 255, 0.1); 
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
         }
-        .btn-action { transition: all 0.2s; cursor: pointer; opacity: 0.8; }
-        .btn-action:hover { opacity: 1; transform: scale(1.2); }
-        .team-a { border-top: 4px solid #3b82f6; }
-        .team-b { border-top: 4px solid #f97316; }
-        
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
-        ::-webkit-scrollbar-thumb { background: #4a5568; border-radius: 10px; }
+        .btn-action { cursor: pointer; transition: transform 0.2s; }
+        .btn-action:hover { transform: scale(1.2); }
     </style>
 </head>
 <body>
@@ -47,60 +39,57 @@
         
         <!-- Header -->
         <div class="text-center mb-10">
-            <h1 class="text-7xl font-black text-orange-500 uppercase tracking-tighter drop-shadow-2xl mb-1">Noob Club</h1>
-            <p class="text-blue-400 font-mono text-lg tracking-[0.4em] uppercase font-bold opacity-90">Montagsrunde Team Balancer</p>
+            <h1 class="text-7xl font-black text-orange-500 uppercase tracking-tighter mb-1">Noob Club</h1>
+            <p class="text-blue-400 font-mono text-lg tracking-[0.4em] uppercase font-bold">Montagsrunde Team Balancer</p>
         </div>
 
         <div class="grid lg:grid-cols-3 gap-8">
             
-            <!-- 1. SPIELER VERWALTEN -->
+            <!-- 1. SPIELER POOL -->
             <div class="card">
                 <h2 class="text-xl font-bold mb-4 border-b border-gray-600 pb-2 text-orange-400 flex justify-between items-center">
                     <span>Spieler-Pool</span>
-                    <span id="playerCount" class="text-xs bg-blue-600 px-2 py-0.5 rounded text-white font-bold">0</span>
+                    <span id="playerCount" class="text-xs bg-blue-600 px-2 py-1 rounded">0</span>
                 </h2>
                 
-                <div class="space-y-3 mb-6 bg-black/40 p-4 rounded-lg border border-white/5 shadow-inner">
-                    <input type="text" id="newName" placeholder="Neuer Spieler Name" class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white outline-none focus:border-orange-500 transition">
+                <div class="space-y-3 mb-6 bg-black/40 p-4 rounded-lg">
+                    <input type="text" id="newName" placeholder="Name" class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white outline-none focus:border-orange-500">
                     <div class="flex items-center justify-between">
-                        <span class="text-sm text-gray-300">FaceIt Level (1-10):</span>
-                        <input type="number" id="newSkill" value="3" min="1" max="10" class="w-20 p-2 rounded bg-gray-800 border border-gray-600 text-center font-bold text-orange-400">
+                        <span class="text-sm text-gray-300">FaceIt Level:</span>
+                        <input type="number" id="newSkill" value="3" min="1" max="10" class="w-20 p-2 rounded bg-gray-800 border border-gray-600 text-center text-orange-400 font-bold">
                     </div>
-                    <button onclick="addPlayer()" class="w-full bg-green-600 hover:bg-green-500 py-2 rounded font-bold transition uppercase text-sm shadow-lg active:translate-y-0.5">Hinzufügen</button>
+                    <button onclick="addPlayer()" class="w-full bg-green-600 hover:bg-green-500 py-2 rounded font-bold uppercase text-xs">Hinzufügen</button>
                 </div>
 
                 <div id="playerPool" class="space-y-2 max-h-[350px] overflow-y-auto pr-2">
-                    <!-- Liste der Mitglieder -->
+                    <!-- JS lädt hier -->
                 </div>
             </div>
 
-            <!-- 2. ANWESENHEIT -->
+            <!-- 2. ANWESENHEIT (MIT DEN BUTTONS) -->
             <div class="card">
-                <h2 class="text-xl font-bold mb-4 border-b border-gray-600 pb-2 text-orange-400">Anwesenheit</h2>
+                <h2 class="text-xl font-bold mb-4 border-b border-gray-600 pb-2 text-orange-400 text-center uppercase">Heute am Start?</h2>
                 
-                <!-- HIER SIND DIE BUTTONS WIEDER -->
-                <div class="flex justify-between mb-3 px-1">
-                    <button onclick="toggleAll(true)" class="text-xs text-blue-400 hover:text-blue-300 font-bold uppercase tracking-wider">Alle auswählen</button>
-                    <button onclick="toggleAll(false)" class="text-xs text-gray-400 hover:text-white font-bold uppercase tracking-wider">Leeren</button>
+                <!-- BUTTONS: ALLE AUSWÄHLEN / LEEREN -->
+                <div class="flex gap-2 mb-4">
+                    <button onclick="toggleAll(true)" class="flex-1 bg-blue-600 hover:bg-blue-500 text-[10px] font-black py-2 rounded uppercase tracking-widest transition">Alle auswählen</button>
+                    <button onclick="toggleAll(false)" class="flex-1 bg-gray-700 hover:bg-gray-600 text-[10px] font-black py-2 rounded uppercase tracking-widest transition">Auswahl leeren</button>
                 </div>
 
-                <div id="activeSelection" class="space-y-1 max-h-[450px] overflow-y-auto pr-1">
-                    <!-- Checkboxen werden hier geladen -->
+                <div id="activeSelection" class="space-y-1 max-h-[400px] overflow-y-auto pr-1">
+                    <!-- Checkboxen -->
                 </div>
                 
-                <button onclick="generateTeams()" class="w-full mt-6 bg-orange-600 hover:bg-orange-500 text-white font-black py-4 rounded-xl shadow-2xl transition transform active:scale-95 text-xl tracking-widest uppercase">
+                <button onclick="generateTeams()" class="w-full mt-6 bg-orange-600 hover:bg-orange-500 text-white font-black py-4 rounded-xl shadow-2xl transition transform active:scale-95 text-xl uppercase tracking-tighter">
                     TEAMS GENERIEREN
                 </button>
             </div>
 
-            <!-- 3. ERGEBNIS & TAUSCH -->
+            <!-- 3. ERGEBNIS -->
             <div class="card">
-                <h2 class="text-xl font-bold mb-4 border-b border-gray-600 pb-2 text-orange-400 text-center">Ergebnis</h2>
+                <h2 class="text-xl font-bold mb-4 border-b border-gray-600 pb-2 text-orange-400 text-center uppercase">Ergebnis</h2>
                 <div id="result" class="space-y-4">
-                    <div class="py-20 text-center">
-                        <span class="text-5xl opacity-20 block mb-4">⚖️</span>
-                        <p class="text-gray-500 italic">Wer ist heute am Start?</p>
-                    </div>
+                    <p class="text-gray-500 italic text-center py-20">Noch keine Teams am Start.</p>
                 </div>
             </div>
 
@@ -109,6 +98,7 @@
 </div>
 
 <script>
+    // DEINE DATEN
     const SUPABASE_URL = 'https://ldsugaxwovooetmjegwt.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_RAVKlH8iHbbSxcd-7SV2qA_fj1ZkxOE';
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -131,7 +121,7 @@
     }
 
     async function deletePlayer(id, name) {
-        if (confirm(`${name} wirklich löschen?`)) {
+        if (confirm(`${name} löschen?`)) {
             await _supabase.from('players').delete().eq('id', id);
             fetchPlayers();
         }
@@ -139,14 +129,9 @@
 
     async function editPlayer(id, currentName, currentSkill) {
         const newName = prompt("Name ändern:", currentName);
-        if (newName === null) return;
-        const newSkill = prompt("FaceIt Level ändern (1-10):", currentSkill);
-        if (newSkill === null) return;
-
-        await _supabase.from('players').update({ 
-            name: newName || currentName, 
-            skill: parseInt(newSkill) || currentSkill 
-        }).eq('id', id);
+        const newSkill = prompt("Level ändern (1-10):", currentSkill);
+        if (newName === null || newSkill === null) return;
+        await _supabase.from('players').update({ name: newName, skill: parseInt(newSkill) }).eq('id', id);
         fetchPlayers();
     }
 
@@ -158,43 +143,41 @@
 
         players.forEach((p) => {
             pool.innerHTML += `
-                <div class="flex justify-between items-center bg-gray-900/60 p-2 rounded border border-gray-700 text-sm">
-                    <span class="font-medium tracking-wide">${p.name} <span class="text-orange-400 font-bold ml-1">Lvl ${p.skill}</span></span>
-                    <div class="flex gap-4">
-                        <span onclick="editPlayer(${p.id}, '${p.name}', ${p.skill})" class="btn-action text-blue-400" title="Bearbeiten">✎</span>
-                        <span onclick="deletePlayer(${p.id}, '${p.name}')" class="btn-action text-red-500" title="Löschen">🗑</span>
+                <div class="flex justify-between items-center bg-gray-900/60 p-2 rounded border border-gray-700 text-xs">
+                    <span>${p.name} <span class="text-orange-400 font-bold">Lvl ${p.skill}</span></span>
+                    <div class="flex gap-3">
+                        <span onclick="editPlayer(${p.id}, '${p.name}', ${p.skill})" class="btn-action text-blue-400">✎</span>
+                        <span onclick="deletePlayer(${p.id}, '${p.name}')" class="btn-action text-red-500 text-lg">×</span>
                     </div>
                 </div>`;
             
             select.innerHTML += `
-                <label class="flex items-center p-2.5 hover:bg-white/10 rounded-lg cursor-pointer transition border-b border-white/5">
-                    <input type="checkbox" class="w-6 h-6 mr-4 accent-orange-500 p-check" data-name="${p.name}" data-skill="${p.skill}">
-                    <span class="flex-grow text-sm font-bold tracking-wider">${p.name}</span>
-                    <span class="bg-black/50 px-2 py-0.5 rounded text-orange-400 font-mono text-xs font-bold border border-white/10">LVL ${p.skill}</span>
+                <label class="flex items-center p-2 hover:bg-white/5 rounded cursor-pointer border-b border-white/5">
+                    <input type="checkbox" class="w-5 h-5 mr-3 accent-orange-500 p-check" data-name="${p.name}" data-skill="${p.skill}">
+                    <span class="flex-grow text-sm font-bold">${p.name}</span>
+                    <span class="text-xs font-mono text-orange-400 font-bold bg-black/40 px-2 rounded">Lvl ${p.skill}</span>
                 </label>`;
         });
     }
 
-    // Funktion für Alle auswählen / leeren
+    // DIE WICHTIGE FUNKTION FÜR ALLE AUSWÄHLEN
     function toggleAll(status) {
-        document.querySelectorAll('.p-check').forEach(cb => cb.checked = status);
+        const checkboxes = document.querySelectorAll('.p-check');
+        checkboxes.forEach(cb => cb.checked = status);
     }
 
     function generateTeams() {
         const checks = document.querySelectorAll('.p-check:checked');
         let selected = Array.from(checks).map(c => ({ name: c.dataset.name, skill: parseInt(c.dataset.skill) }));
-        
-        if (selected.length < 2) return alert("Mindestens 2 Noobs auswählen!");
+        if (selected.length < 2) return alert("Wähle mindestens 2 Spieler!");
 
         selected.sort((a,b) => b.skill - a.skill);
         teamA = []; teamB = [];
         let sA = 0, sB = 0;
-
         selected.forEach(p => {
             if (sA <= sB) { teamA.push(p); sA += p.skill; }
             else { teamB.push(p); sB += p.skill; }
         });
-
         displayTeams();
     }
 
@@ -215,32 +198,32 @@
         const sumB = teamB.reduce((a, b) => a + b.skill, 0);
 
         const renderList = (list, teamLabel) => list.map(p => `
-            <li class="flex justify-between items-center bg-black/40 p-2 rounded my-1 border border-white/5 text-sm">
-                <span><span class="text-orange-400 font-bold mr-2 text-[10px] uppercase">Lvl ${p.skill}</span> ${p.name}</span>
-                <button onclick="swapPlayer('${p.name}', '${teamLabel}')" class="text-lg hover:text-orange-500 transition px-2" title="Wechseln">⇄</button>
+            <li class="flex justify-between items-center bg-black/40 p-2 rounded my-1 text-xs border border-white/5">
+                <span><span class="text-orange-400 font-bold mr-2">${p.skill}</span> ${p.name}</span>
+                <button onclick="swapPlayer('${p.name}', '${teamLabel}')" class="text-lg hover:text-orange-500 px-2">⇄</button>
             </li>
         `).join('');
 
         resDiv.innerHTML = `
-            <div class="team-a p-4 bg-blue-600/10 rounded-xl mb-4 shadow-xl border border-blue-500/20">
-                <div class="flex justify-between font-black text-blue-400 mb-3 uppercase tracking-tighter italic text-lg">
+            <div class="p-3 bg-blue-900/30 rounded-lg border-t-4 border-blue-500 shadow-lg">
+                <div class="flex justify-between font-black text-blue-400 mb-2 uppercase italic">
                     <span>Team A</span>
-                    <span class="text-white bg-blue-600/40 px-2 rounded-md font-mono">Pwr: ${sumA}</span>
+                    <span class="text-white">Pwr: ${sumA}</span>
                 </div>
                 <ul>${renderList(teamA, 'A')}</ul>
             </div>
             
-            <div class="team-b p-4 bg-orange-600/10 rounded-xl mb-4 shadow-xl border border-orange-500/20">
-                <div class="flex justify-between font-black text-orange-400 mb-3 uppercase tracking-tighter italic text-lg">
+            <div class="p-3 bg-orange-900/30 rounded-lg border-t-4 border-orange-500 shadow-lg mt-4">
+                <div class="flex justify-between font-black text-orange-400 mb-2 uppercase italic">
                     <span>Team B</span>
-                    <span class="text-white bg-orange-600/40 px-2 rounded-md font-mono">Pwr: ${sumB}</span>
+                    <span class="text-white">Pwr: ${sumB}</span>
                 </div>
                 <ul>${renderList(teamB, 'B')}</ul>
             </div>
 
-            <div class="text-center p-3 bg-black/60 rounded-lg border border-gray-700 shadow-inner">
-                <span class="text-[10px] text-gray-500 uppercase tracking-[0.2em] block mb-1">Skill-Differenz</span>
-                <span class="font-black text-2xl text-orange-500">${Math.abs(sumA - sumB)}</span>
+            <div class="text-center p-2 bg-black/60 rounded border border-gray-700 mt-4">
+                <span class="text-[10px] text-gray-500 uppercase tracking-widest">Differenz:</span>
+                <span class="ml-2 font-black text-xl text-orange-500">${Math.abs(sumA - sumB)}</span>
             </div>
         `;
     }
