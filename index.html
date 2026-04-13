@@ -46,13 +46,13 @@
             
             <!-- 1. SPIELER POOL -->
             <div class="card">
-                <h2 class="text-xl font-bold mb-4 border-b border-gray-600 pb-2 text-orange-400 flex justify-between items-center">
+                <h2 class="text-xl font-bold mb-4 border-b border-gray-600 pb-2 text-orange-400 flex justify-between items-center text-orange-400 font-bold">
                     <span>Spieler-Pool</span>
-                    <span id="playerCount" class="text-xs bg-blue-600 px-2 py-1 rounded">0</span>
+                    <span id="playerCount" class="text-xs bg-blue-600 px-2 py-1 rounded text-white font-bold">0</span>
                 </h2>
                 
                 <div class="space-y-3 mb-6 bg-black/40 p-4 rounded-lg">
-                    <input type="text" id="newName" placeholder="Name" class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white outline-none focus:border-orange-500">
+                    <input type="text" id="newName" placeholder="Name" class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white outline-none focus:border-orange-500 transition text-white">
                     <div class="flex items-center justify-between">
                         <span class="text-sm text-gray-300">FaceIt Level:</span>
                         <input type="number" id="newSkill" value="3" min="1" max="10" class="w-20 p-2 rounded bg-gray-800 border border-gray-600 text-center text-orange-400 font-bold">
@@ -60,7 +60,7 @@
                     <button onclick="addPlayer()" class="w-full bg-green-600 hover:bg-green-500 py-2 rounded font-bold uppercase text-xs">Hinzufügen</button>
                 </div>
 
-                <div id="playerPool" class="space-y-2 max-h-[350px] overflow-y-auto pr-2">
+                <div id="playerPool" class="space-y-2 max-h-[400px] overflow-y-auto pr-2">
                 </div>
             </div>
 
@@ -69,8 +69,8 @@
                 <h2 class="text-xl font-bold mb-4 border-b border-gray-600 pb-2 text-orange-400 text-center uppercase">Heute am Start?</h2>
                 
                 <div class="flex gap-2 mb-4">
-                    <button onclick="toggleAll(true)" class="flex-1 bg-blue-600 hover:bg-blue-500 text-[10px] font-black py-2 rounded uppercase tracking-widest transition">Alle auswählen</button>
-                    <button onclick="toggleAll(false)" class="flex-1 bg-gray-700 hover:bg-gray-600 text-[10px] font-black py-2 rounded uppercase tracking-widest transition">Auswahl leeren</button>
+                    <button onclick="toggleAll(true)" class="flex-1 bg-blue-600 hover:bg-blue-500 text-[10px] font-black py-2 rounded uppercase tracking-widest transition text-white">Alle auswählen</button>
+                    <button onclick="toggleAll(false)" class="flex-1 bg-gray-700 hover:bg-gray-600 text-[10px] font-black py-2 rounded uppercase tracking-widest transition text-white">Auswahl leeren</button>
                 </div>
 
                 <div id="activeSelection" class="space-y-1 max-h-[400px] overflow-y-auto pr-1">
@@ -101,6 +101,15 @@
     let players = [];
     let teamA = [];
     let teamB = [];
+    let teamAName = "Team A";
+    let teamBName = "Team B";
+
+    const funnyNamesPool = [
+        "Die Spray-and-Pray Könige", "Die Silver-Surfer", "Ecke-Camper e.V.", "Blind-Flash Experten",
+        "Die Exit-Fragger", "Eco-Enthusiasten", "P90-Rusher", "Bottom-Fragger United",
+        "Team Whiff", "Die Smoke-Verfehler", "Dreckige Pistolen-Helden", "Die Master-Baited",
+        "Schattenboxer am Spawn", "Die Flash-Opfer", "Full-Buy Verlierer"
+    ];
 
     async function fetchPlayers() {
         const { data } = await _supabase.from('players').select('*').order('name', { ascending: true });
@@ -138,8 +147,8 @@
 
         players.forEach((p) => {
             pool.innerHTML += `
-                <div class="flex justify-between items-center bg-gray-900/60 p-2 rounded border border-gray-700 text-xs">
-                    <span>${p.name} <span class="text-orange-400 font-bold">Lvl ${p.skill}</span></span>
+                <div class="flex justify-between items-center bg-gray-900/60 p-2 rounded border border-gray-700 text-xs transition hover:border-gray-500">
+                    <span>${p.name} <span class="text-orange-400 font-bold ml-1">Lvl ${p.skill}</span></span>
                     <div class="flex gap-3">
                         <span onclick="editPlayer(${p.id}, '${p.name}', ${p.skill})" class="btn-action text-blue-400">✎</span>
                         <span onclick="deletePlayer(${p.id}, '${p.name}')" class="btn-action text-red-500 text-lg">×</span>
@@ -147,10 +156,10 @@
                 </div>`;
             
             select.innerHTML += `
-                <label class="flex items-center p-2 hover:bg-white/5 rounded cursor-pointer border-b border-white/5">
+                <label class="flex items-center p-2 hover:bg-white/5 rounded cursor-pointer border-b border-white/5 transition">
                     <input type="checkbox" class="w-5 h-5 mr-3 accent-orange-500 p-check" data-name="${p.name}" data-skill="${p.skill}">
-                    <span class="flex-grow text-sm font-bold">${p.name}</span>
-                    <span class="text-xs font-mono text-orange-400 font-bold bg-black/40 px-2 rounded">Lvl ${p.skill}</span>
+                    <span class="flex-grow text-sm font-bold tracking-wide">${p.name}</span>
+                    <span class="text-xs font-mono text-orange-400 font-bold bg-black/40 px-2 rounded border border-white/10">Lvl ${p.skill}</span>
                 </label>`;
         });
     }
@@ -172,6 +181,12 @@
             if (sA <= sB) { teamA.push(p); sA += p.skill; }
             else { teamB.push(p); sB += p.skill; }
         });
+
+        // Namen direkt aus dem Pool vergeben
+        const shuffled = [...funnyNamesPool].sort(() => 0.5 - Math.random());
+        teamAName = shuffled[0];
+        teamBName = shuffled[1];
+
         displayTeams();
     }
 
@@ -186,25 +201,16 @@
         displayTeams();
     }
 
-    // NEUE FUNKTION FÜR DISCORD KOPIEREN
     function copyToDiscord() {
         if (teamA.length === 0 || teamB.length === 0) return;
-        
         const sumA = teamA.reduce((a, b) => a + b.skill, 0);
         const sumB = teamB.reduce((a, b) => a + b.skill, 0);
-        
-        let text = `**--- Noob Club Teams ---**\n\n`;
-        text += `**TEAM A (Pwr: ${sumA})**\n`;
+        let text = `**--- Noob Club Teams ---**\n\n**${teamAName.toUpperCase()} (Pwr: ${sumA})**\n`;
         teamA.forEach(p => text += `• ${p.name} (Lvl ${p.skill})\n`);
-        
-        text += `\n**TEAM B (Pwr: ${sumB})**\n`;
+        text += `\n**${teamBName.toUpperCase()} (Pwr: ${sumB})**\n`;
         teamB.forEach(p => text += `• ${p.name} (Lvl ${p.skill})\n`);
-        
         text += `\n*Differenz: ${Math.abs(sumA - sumB)}*`;
-
-        navigator.clipboard.writeText(text).then(() => {
-            alert("Teams für Discord kopiert!");
-        });
+        navigator.clipboard.writeText(text).then(() => alert("Teams für Discord kopiert!"));
     }
 
     function displayTeams() {
@@ -215,30 +221,30 @@
         const renderList = (list, teamLabel) => list.map(p => `
             <li class="flex justify-between items-center bg-black/40 p-2 rounded my-1 text-xs border border-white/5">
                 <span><span class="text-orange-400 font-bold mr-2">${p.skill}</span> ${p.name}</span>
-                <button onclick="swapPlayer('${p.name}', '${teamLabel}')" class="text-lg hover:text-orange-500 px-2">⇄</button>
+                <button onclick="swapPlayer('${p.name}', '${teamLabel}')" class="text-lg hover:text-orange-500 px-2 transition">⇄</button>
             </li>
         `).join('');
 
         resDiv.innerHTML = `
             <div class="p-3 bg-blue-900/30 rounded-lg border-t-4 border-blue-500 shadow-lg">
-                <div class="flex justify-between font-black text-blue-400 mb-2 uppercase italic">
-                    <span>Team A</span>
+                <div class="flex justify-between font-black text-blue-400 mb-2 uppercase italic text-[11px] tracking-tight">
+                    <span>${teamAName}</span>
                     <span class="text-white">Pwr: ${sumA}</span>
                 </div>
                 <ul>${renderList(teamA, 'A')}</ul>
             </div>
             
             <div class="p-3 bg-orange-900/30 rounded-lg border-t-4 border-orange-500 shadow-lg mt-4">
-                <div class="flex justify-between font-black text-orange-400 mb-2 uppercase italic">
-                    <span>Team B</span>
+                <div class="flex justify-between font-black text-orange-400 mb-2 uppercase italic text-[11px] tracking-tight">
+                    <span>${teamBName}</span>
                     <span class="text-white">Pwr: ${sumB}</span>
                 </div>
                 <ul>${renderList(teamB, 'B')}</ul>
             </div>
 
-            <div class="text-center p-2 bg-black/60 rounded border border-gray-700 mt-4">
-                <span class="text-[10px] text-gray-500 uppercase tracking-widest">Differenz:</span>
-                <span class="ml-2 font-black text-xl text-orange-500">${Math.abs(sumA - sumB)}</span>
+            <div class="text-center p-2 bg-black/60 rounded border border-gray-700 mt-4 shadow-inner">
+                <span class="text-[10px] text-gray-500 uppercase tracking-widest block mb-1">Differenz:</span>
+                <span class="font-black text-xl text-orange-500">${Math.abs(sumA - sumB)}</span>
             </div>
 
             <button onclick="copyToDiscord()" class="w-full mt-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded uppercase text-[10px] tracking-widest transition shadow-lg">
