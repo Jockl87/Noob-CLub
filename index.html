@@ -29,6 +29,11 @@
         }
         .btn-action { cursor: pointer; transition: transform 0.2s; }
         .btn-action:hover { transform: scale(1.2); }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #4a5568; border-radius: 10px; }
     </style>
 </head>
 <body>
@@ -55,7 +60,6 @@
                     <input type="text" id="newName" placeholder="Name" class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white outline-none focus:border-orange-500 transition text-white">
                     <div class="flex items-center justify-between">
                         
-                        <!-- NEUES LEVEL FELD MIT INFO TOOLTIP -->
                         <div class="flex items-center gap-2">
                             <span class="text-sm text-gray-300">Level:</span>
                             <div class="group relative flex items-center justify-center cursor-help">
@@ -71,10 +75,10 @@
                     <button onclick="addPlayer()" class="w-full bg-green-600 hover:bg-green-500 py-2 rounded font-bold uppercase text-xs">Hinzufügen</button>
                 </div>
 
-                <div id="playerPool" class="space-y-2 max-h-[400px] overflow-y-auto pr-2 mb-6">
+                <!-- flex-grow nimmt den restlichen Platz ein -->
+                <div id="playerPool" class="space-y-2 overflow-y-auto pr-2 mb-6 flex-grow">
                 </div>
 
-                <!-- DONATE BUTTON -->
                 <div class="mt-auto pt-4 border-t border-gray-700 text-center">
                     <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=denis.gross92@web.de&currency_code=EUR" target="_blank" class="inline-block w-full bg-yellow-600 hover:bg-yellow-500 text-white text-[10px] font-black py-2 rounded uppercase tracking-widest transition shadow-lg">
                         💰 Server-Spende (PayPal)
@@ -83,7 +87,7 @@
             </div>
 
             <!-- 2. ANWESENHEIT -->
-            <div class="card text-white font-black py-2 rounded uppercase tracking-widest transition text-white">
+            <div class="card flex flex-col h-full">
                 <h2 class="text-xl font-bold mb-4 border-b border-gray-600 pb-2 text-orange-400 text-center uppercase">Heute am Start?</h2>
                 
                 <div class="flex gap-2 mb-4">
@@ -91,19 +95,24 @@
                     <button onclick="toggleAll(false)" class="flex-1 bg-gray-700 hover:bg-gray-600 text-[10px] font-black py-2 rounded uppercase tracking-widest transition text-white">Auswahl leeren</button>
                 </div>
 
-                <div id="activeSelection" class="space-y-1 max-h-[400px] overflow-y-auto pr-1">
+                <!-- flex-grow nimmt den restlichen Platz ein -->
+                <div id="activeSelection" class="space-y-1 overflow-y-auto pr-1 flex-grow mb-6">
                 </div>
                 
-                <button onclick="generateTeams()" class="w-full mt-6 bg-orange-600 hover:bg-orange-500 text-white font-black py-4 rounded-xl shadow-2xl transition transform active:scale-95 text-xl uppercase tracking-tighter">
+                <button onclick="generateTeams()" class="w-full mt-auto bg-orange-600 hover:bg-orange-500 text-white font-black py-4 rounded-xl shadow-2xl transition transform active:scale-95 text-xl uppercase tracking-tighter">
                     TEAMS GENERIEREN
                 </button>
             </div>
 
             <!-- 3. ERGEBNIS -->
-            <div class="card">
+            <div class="card flex flex-col h-full">
                 <h2 class="text-xl font-bold mb-4 border-b border-gray-600 pb-2 text-orange-400 text-center uppercase">Ergebnis</h2>
-                <div id="result" class="space-y-4">
-                    <p class="text-gray-500 italic text-center py-20 font-black tracking-tighter italic">Noch keine Teams am Start.</p>
+                
+                <!-- flex-grow sorgt dafür, dass sich die Buttons nach unten anpassen -->
+                <div id="result" class="space-y-4 flex-grow flex flex-col">
+                    <div class="flex-grow flex items-center justify-center">
+                        <p class="text-gray-500 font-black tracking-tighter italic">Noch keine Teams am Start.</p>
+                    </div>
                 </div>
             </div>
 
@@ -166,7 +175,7 @@
         players.forEach((p) => {
             pool.innerHTML += `
                 <div class="flex justify-between items-center bg-gray-900/60 p-2 rounded border border-gray-700 text-xs transition hover:border-gray-500">
-                    <span>${p.name} <span class="text-orange-400 font-bold ml-1 text-orange-400 font-bold">Lvl ${p.skill}</span></span>
+                    <span>${p.name} <span class="text-orange-400 font-bold ml-1">Lvl ${p.skill}</span></span>
                     <div class="flex gap-3">
                         <span onclick="editPlayer(${p.id}, '${p.name}', ${p.skill})" class="btn-action text-blue-400">✎</span>
                         <span onclick="deletePlayer(${p.id}, '${p.name}')" class="btn-action text-red-500 text-lg">×</span>
@@ -175,114 +184,4 @@
             
             select.innerHTML += `
                 <label class="flex items-center p-2 hover:bg-white/5 rounded cursor-pointer border-b border-white/5 transition">
-                    <input type="checkbox" class="w-5 h-5 mr-3 accent-orange-500 p-check" data-name="${p.name}" data-skill="${p.skill}">
-                    <span class="flex-grow text-sm font-bold tracking-wide">${p.name}</span>
-                    <span class="text-xs font-mono text-orange-400 font-bold bg-black/40 px-2 rounded border border-white/10 text-orange-400 font-bold">Lvl ${p.skill}</span>
-                </label>`;
-        });
-    }
-
-    function toggleAll(status) {
-        const checkboxes = document.querySelectorAll('.p-check');
-        checkboxes.forEach(cb => cb.checked = status);
-    }
-
-    function generateTeams() {
-        const checks = document.querySelectorAll('.p-check:checked');
-        let selected = Array.from(checks).map(c => ({ name: c.dataset.name, skill: parseInt(c.dataset.skill) }));
-        if (selected.length < 2) return alert("Wähle mindestens 2 Spieler!");
-
-        selected.sort((a,b) => b.skill - a.skill);
-        teamA = []; teamB = [];
-        let sA = 0, sB = 0;
-        selected.forEach(p => {
-            if (sA <= sB) { teamA.push(p); sA += p.skill; }
-            else { teamB.push(p); sB += p.skill; }
-        });
-
-        const shuffled = [...funnyNamesPool].sort(() => 0.5 - Math.random());
-        teamAName = shuffled[0];
-        teamBName = shuffled[1];
-
-        displayTeams();
-    }
-
-    function swapPlayer(name, fromTeam) {
-        if (fromTeam === 'A') {
-            const idx = teamA.findIndex(p => p.name === name);
-            teamB.push(teamA.splice(idx, 1)[0]);
-        } else {
-            const idx = teamB.findIndex(p => p.name === name);
-            teamA.push(teamB.splice(idx, 1)[0]);
-        }
-        displayTeams();
-    }
-
-    function copyToDiscord() {
-        if (teamA.length === 0 || teamB.length === 0) return;
-        const sumA = teamA.reduce((a, b) => a + b.skill, 0);
-        const sumB = teamB.reduce((a, b) => a + b.skill, 0);
-        let text = `**--- Noob Club Teams ---**\n\n**${teamAName.toUpperCase()} (Pwr: ${sumA})**\n`;
-        teamA.forEach(p => text += `• ${p.name} (Lvl ${p.skill})\n`);
-        text += `\n**${teamBName.toUpperCase()} (Pwr: ${sumB})**\n`;
-        teamB.forEach(p => text += `• ${p.name} (Lvl ${p.skill})\n`);
-        text += `\n*Differenz: ${Math.abs(sumA - sumB)}*`;
-        text += `\n\n**Nicht vergessen: !ready eingeben zum Starten!**`;
-        
-        navigator.clipboard.writeText(text).then(() => alert("Teams für Discord kopiert!"));
-    }
-
-    function copyConnect() {
-        const cmd = "connect montagsrunde.noob.club:26807; password Heddesheim";
-        navigator.clipboard.writeText(cmd).then(() => alert("Connect-Befehl kopiert!"));
-    }
-
-    function displayTeams() {
-        const resDiv = document.getElementById('result');
-        const sumA = teamA.reduce((a, b) => a + b.skill, 0);
-        const sumB = teamB.reduce((a, b) => a + b.skill, 0);
-
-        const renderList = (list, teamLabel) => list.map(p => `
-            <li class="flex justify-between items-center bg-black/40 p-2 rounded my-1 text-xs border border-white/5">
-                <span><span class="text-orange-400 font-bold mr-2">${p.skill}</span> ${p.name}</span>
-                <button onclick="swapPlayer('${p.name}', '${teamLabel}')" class="text-lg hover:text-orange-500 px-2 transition">⇄</button>
-            </li>
-        `).join('');
-
-        resDiv.innerHTML = `
-            <div class="p-3 bg-blue-900/30 rounded-lg border-t-4 border-blue-500 shadow-lg">
-                <div class="flex justify-between font-black text-blue-400 mb-2 uppercase italic text-[11px] tracking-tight">
-                    <span>${teamAName}</span>
-                    <span class="text-white">Pwr: ${sumA}</span>
-                </div>
-                <ul>${renderList(teamA, 'A')}</ul>
-            </div>
-            
-            <div class="p-3 bg-orange-900/30 rounded-lg border-t-4 border-orange-500 shadow-lg mt-4">
-                <div class="flex justify-between font-black text-orange-400 mb-2 uppercase italic text-[11px] tracking-tight">
-                    <span>${teamBName}</span>
-                    <span class="text-white">Pwr: ${sumB}</span>
-                </div>
-                <ul>${renderList(teamB, 'B')}</ul>
-            </div>
-
-            <div class="text-center p-2 bg-black/60 rounded border border-gray-700 mt-4 shadow-inner">
-                <span class="text-[10px] text-gray-500 uppercase tracking-widest block mb-1">Differenz:</span>
-                <span class="ml-2 font-black text-xl text-orange-500">${Math.abs(sumA - sumB)}</span>
-            </div>
-
-            <button onclick="copyToDiscord()" class="w-full mt-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded uppercase text-[10px] tracking-widest transition shadow-lg text-white">
-                Teams für Discord kopieren
-            </button>
-            
-            <button onclick="copyConnect()" class="w-full mt-2 bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 rounded uppercase text-[10px] tracking-widest transition shadow-lg border border-gray-600 text-white font-black py-2 rounded uppercase tracking-widest transition text-white">
-                Server Connect Befehl kopieren
-            </button>
-        `;
-    }
-
-    fetchPlayers();
-</script>
-
-</body>
-</html>
+                    <input type
