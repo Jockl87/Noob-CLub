@@ -77,6 +77,7 @@
                 <div id="playerPool" class="space-y-2 overflow-y-auto pr-2 max-h-[300px] lg:max-h-full lg:flex-grow"></div>
 
                 <div class="mt-4 lg:mt-auto pt-4 border-t border-gray-700 text-center shrink-0">
+                    <!-- HIER DEINEN PAYPAL.ME NAMEN EINTRAGEN -->
                     <a href="https://paypal.me/DEIN_PAYPAL_ME_NAME" target="_blank" class="inline-block w-full bg-yellow-600 hover:bg-yellow-500 text-white text-[10px] font-black py-2 rounded uppercase tracking-widest transition shadow-lg">
                         💰 Server-Spende (PayPal)
                     </a>
@@ -206,21 +207,19 @@
         let selected = Array.from(checks).map(c => ({ name: c.dataset.name, skill: parseInt(c.dataset.skill) }));
         if (selected.length < 2) return alert("Wähle mindestens 2 Spieler!");
 
-        // MONTE CARLO BALANCING MIT FESTER SPIELERANZAHL PRO TEAM
+        // MONTE CARLO BALANCING
         let bestDiff = Infinity;
         let candidates = [];
-        const halfSize = Math.ceil(selected.length / 2); // Bestimmt die genaue Hälfte (z.B. 5 bei 10, 5 bei 9)
 
-        // Generiere 1000 zufällige Setups für beste Genauigkeit
-        for (let i = 0; i < 1000; i++) {
+        // Generiere 500 zufällige Setups und finde die fairsten
+        for (let i = 0; i < 500; i++) {
             let shuffled = [...selected].sort(() => 0.5 - Math.random());
+            let tA = [], tB = [], sA = 0, sB = 0;
             
-            // Spieler exakt hälftig aufteilen
-            let tA = shuffled.slice(0, halfSize);
-            let tB = shuffled.slice(halfSize);
-            
-            let sA = tA.reduce((sum, p) => sum + p.skill, 0);
-            let sB = tB.reduce((sum, p) => sum + p.skill, 0);
+            shuffled.forEach(p => {
+                if (sA <= sB) { tA.push(p); sA += p.skill; }
+                else { tB.push(p); sB += p.skill; }
+            });
             
             let diff = Math.abs(sA - sB);
             
@@ -250,4 +249,73 @@
         }
     }
 
-    function swapPlayer(name, fromTeam)
+    function swapPlayer(name, fromTeam) {
+        if (fromTeam === 'A') {
+            const idx = teamA.findIndex(p => p.name === name);
+            teamB.push(teamA.splice(idx, 1)[0]);
+        } else {
+            const idx = teamB.findIndex(p => p.name === name);
+            teamA.push(teamB.splice(idx, 1)[0]);
+        }
+        displayTeams();
+    }
+
+    function copyToDiscord() {
+        const sumA = teamA.reduce((a, b) => a + b.skill, 0);
+        const sumB = teamB.reduce((a, b) => a + b.skill, 0);
+        let text = `**--- Noob Club Teams ---**\n\n**${teamAName.toUpperCase()} (Pwr: ${sumA})**\n`;
+        teamA.forEach(p => text += `• ${p.name} (Lvl ${p.skill})\n`);
+        text += `\n**${teamBName.toUpperCase()} (Pwr: ${sumB})**\n`;
+        teamB.forEach(p => text += `• ${p.name} (Lvl ${p.skill})\n`);
+        text += `\n*Differenz: ${Math.abs(sumA - sumB)}*`;
+        text += `\n\n**Nicht vergessen: !ready eingeben zum Starten!**`;
+        navigator.clipboard.writeText(text).then(() => alert("Teams für Discord kopiert!"));
+    }
+
+    function copyConnect() {
+        navigator.clipboard.writeText("connect montagsrunde.noob.club:26807; password Heddesheim").then(() => alert("Connect-Befehl kopiert!"));
+    }
+
+    function displayTeams() {
+        const resDiv = document.getElementById('result');
+        const sumA = teamA.reduce((a, b) => a + b.skill, 0);
+        const sumB = teamB.reduce((a, b) => a + b.skill, 0);
+
+        const renderList = (list, teamLabel) => list.map(p => `
+            <li class="flex justify-between items-center bg-black/40 p-2 rounded my-1 text-xs border border-white/5">
+                <span><span class="text-orange-400 font-bold mr-2">${p.skill}</span> ${p.name}</span>
+                <button onclick="swapPlayer('${p.name}', '${teamLabel}')" class="text-lg hover:text-orange-500 px-2 transition">⇄</button>
+            </li>
+        `).join('');
+
+        resDiv.innerHTML = `
+            <div class="flex-grow">
+                <div class="p-3 bg-blue-900/30 rounded-lg border-t-4 border-blue-500 shadow-lg">
+                    <div class="flex justify-between font-black text-blue-400 mb-2 uppercase italic text-[11px] tracking-tight">
+                        <span>${teamAName}</span>
+                        <span class="text-white">Pwr: ${sumA}</span>
+                    </div>
+                    <ul>${renderList(teamA, 'A')}</ul>
+                </div>
+                
+                <div class="p-3 bg-orange-900/30 rounded-lg border-t-4 border-orange-500 shadow-lg mt-4">
+                    <div class="flex justify-between font-black text-orange-400 mb-2 uppercase italic text-[11px] tracking-tight">
+                        <span>${teamBName}</span>
+                        <span class="text-white">Pwr: ${sumB}</span>
+                    </div>
+                    <ul>${renderList(teamB, 'B')}</ul>
+                </div>
+
+                <div class="text-center p-2 bg-black/60 rounded border border-gray-700 mt-4 shadow-inner">
+                    <span class="text-[10px] text-gray-500 uppercase tracking-widest block mb-1">Differenz:</span>
+                    <span class="ml-2 font-black text-xl text-orange-500">${Math.abs(sumA - sumB)}</span>
+                </div>
+            </div>
+        `;
+    }
+
+    fetchPlayers();
+</script>
+
+</body>
+</html>
