@@ -45,7 +45,7 @@
         <div class="grid lg:grid-cols-3 gap-8">
             
             <!-- 1. SPIELER POOL -->
-            <div class="card">
+            <div class="card flex flex-col h-full">
                 <h2 class="text-xl font-bold mb-4 border-b border-gray-600 pb-2 text-orange-400 flex justify-between items-center text-orange-400 font-bold">
                     <span>Spieler-Pool</span>
                     <span id="playerCount" class="text-xs bg-blue-600 px-2 py-1 rounded text-white font-bold">0</span>
@@ -60,12 +60,19 @@
                     <button onclick="addPlayer()" class="w-full bg-green-600 hover:bg-green-500 py-2 rounded font-bold uppercase text-xs">Hinzufügen</button>
                 </div>
 
-                <div id="playerPool" class="space-y-2 max-h-[400px] overflow-y-auto pr-2">
+                <div id="playerPool" class="space-y-2 max-h-[400px] overflow-y-auto pr-2 mb-6">
+                </div>
+
+                <!-- DONATE BUTTON -->
+                <div class="mt-auto pt-4 border-t border-gray-700 text-center">
+                    <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=denis.gross92@web.de&currency_code=EUR" target="_blank" class="inline-block w-full bg-yellow-600 hover:bg-yellow-500 text-white text-[10px] font-black py-2 rounded uppercase tracking-widest transition shadow-lg">
+                        💰 Server-Spende (PayPal)
+                    </a>
                 </div>
             </div>
 
             <!-- 2. ANWESENHEIT -->
-            <div class="card">
+            <div class="card text-white font-black py-2 rounded uppercase tracking-widest transition text-white">
                 <h2 class="text-xl font-bold mb-4 border-b border-gray-600 pb-2 text-orange-400 text-center uppercase">Heute am Start?</h2>
                 
                 <div class="flex gap-2 mb-4">
@@ -85,7 +92,7 @@
             <div class="card">
                 <h2 class="text-xl font-bold mb-4 border-b border-gray-600 pb-2 text-orange-400 text-center uppercase">Ergebnis</h2>
                 <div id="result" class="space-y-4">
-                    <p class="text-gray-500 italic text-center py-20">Noch keine Teams am Start.</p>
+                    <p class="text-gray-500 italic text-center py-20 font-black tracking-tighter italic">Noch keine Teams am Start.</p>
                 </div>
             </div>
 
@@ -148,7 +155,7 @@
         players.forEach((p) => {
             pool.innerHTML += `
                 <div class="flex justify-between items-center bg-gray-900/60 p-2 rounded border border-gray-700 text-xs transition hover:border-gray-500">
-                    <span>${p.name} <span class="text-orange-400 font-bold ml-1">Lvl ${p.skill}</span></span>
+                    <span>${p.name} <span class="text-orange-400 font-bold ml-1 text-orange-400 font-bold">Lvl ${p.skill}</span></span>
                     <div class="flex gap-3">
                         <span onclick="editPlayer(${p.id}, '${p.name}', ${p.skill})" class="btn-action text-blue-400">✎</span>
                         <span onclick="deletePlayer(${p.id}, '${p.name}')" class="btn-action text-red-500 text-lg">×</span>
@@ -159,7 +166,7 @@
                 <label class="flex items-center p-2 hover:bg-white/5 rounded cursor-pointer border-b border-white/5 transition">
                     <input type="checkbox" class="w-5 h-5 mr-3 accent-orange-500 p-check" data-name="${p.name}" data-skill="${p.skill}">
                     <span class="flex-grow text-sm font-bold tracking-wide">${p.name}</span>
-                    <span class="text-xs font-mono text-orange-400 font-bold bg-black/40 px-2 rounded border border-white/10">Lvl ${p.skill}</span>
+                    <span class="text-xs font-mono text-orange-400 font-bold bg-black/40 px-2 rounded border border-white/10 text-orange-400 font-bold">Lvl ${p.skill}</span>
                 </label>`;
         });
     }
@@ -253,11 +260,11 @@
                 <span class="ml-2 font-black text-xl text-orange-500">${Math.abs(sumA - sumB)}</span>
             </div>
 
-            <button onclick="copyToDiscord()" class="w-full mt-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded uppercase text-[10px] tracking-widest transition shadow-lg">
+            <button onclick="copyToDiscord()" class="w-full mt-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded uppercase text-[10px] tracking-widest transition shadow-lg text-white">
                 Teams für Discord kopieren
             </button>
             
-            <button onclick="copyConnect()" class="w-full mt-2 bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 rounded uppercase text-[10px] tracking-widest transition shadow-lg border border-gray-600">
+            <button onclick="copyConnect()" class="w-full mt-2 bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 rounded uppercase text-[10px] tracking-widest transition shadow-lg border border-gray-600 text-white font-black py-2 rounded uppercase tracking-widest transition text-white">
                 Server Connect Befehl kopieren
             </button>
         `;
