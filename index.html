@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Noob Club Live-Balancer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { background-color: #1a202c; color: white; }
+        .card { background-color: #2d3748; border-radius: 12px; padding: 20px; box-shadow: 0 10px 15px rgba(0,0,0,0.4); }
+    </style>
+</head>
+<body class="p-4 md:p-10">
+
+    <div id="mainContent" class="max-w-6xl mx-auto">
+        <div class="text-center mb-10">
+            <h1 class="text-4xl font-extrabold text-orange-500 uppercase">Noob Club Live</h1>
+            <p class="text-gray-400 font-mono text-sm tracking-widest">Montagsrunde Team Balancer</p>
+        </div>
+
+        <div class="grid lg:grid-cols-3 gap-8">
+            <!-- Verwaltung: Spieler hinzufügen -->
+            <div class="card">
+                <h2 class="text-xl font-semibold mb-4 border-b border-gray-600 pb-2 text-orange-400">Spieler hinzufügen</h2>
+                <div class="space-y-4">
+                    <input type="text" id="newName" placeholder="Name" class="w-full p-2 rounded bg-gray-900 border border-gray-700 text-white outline-none focus:border-orange-500">
+                    <div class="flex items-center gap-4">
+                        <label class="text-sm text-gray-400">FaceIt Level:</label>
+                        <input type="number" id="newSkill" value="3" min="1" max="10" class="w-20 p-2 rounded bg-gray-900 border border-gray-700 text-center">
+                    </div>
+                    <button onclick="addPlayer()" class="w-full bg-green-600 hover:bg-green-500 py-2 rounded font-bold transition">Hinzufügen</button>
+                </div>
+
+                <div class="mt-8">
+                    <h2 class="text-sm font-bold text-gray-500 uppercase mb-2">Alle Spieler im Club</h2>
+                    <div id="playerPool" class="space-y-2 max-h-64 overflow-y-auto pr-2">
+                        <!-- Wird aus DB geladen -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Auswahl: Wer ist da? -->
+            <div class="card">
+                <h2 class="text-xl font-semibold mb-4 border-b border-gray-600 pb-2 text-orange-400">Anwesenheit</h2>
+                <div id="activeSelection" class="space-y-1">
+                    <p class="text-gray-500 italic">Lade Spielerliste...</p>
+                </div>
+                <button onclick="balanceTeams()" class="w-full mt-6 bg-orange-600 hover:bg-orange-500 text-white font-bold py-3 rounded shadow-lg transition">
+                    Teams generieren
+                </button>
+            </div>
+
+            <!-- Ergebnis -->
+            <div class="card">
+                <h2 class="text-xl font-semibold mb-4 border-b border-gray-600 pb-2 text-orange-400">Vorschlag</h2>
+                <div id="result" class="space-y-4"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 1. SUPABASE KONFIGURATION (Hier deine Daten eintragen!)
+        const SUPABASE_URL = 'DEINE_SUPABASE_URL';
+        const SUPABASE_KEY = 'DEIN_SUPABASE_ANON_KEY';
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let players = [];
+
+        // 2. Daten beim Start laden
+        async function fetchPlayers() {
+            const { data, error } = await _supabase
+                .from('players')
+                .select('*')
+                .order('name', { ascending: true });
+
+            if (data) {
+                players = data;
+                renderUI();
+            }
+        }
+
+        // 3. Neuen Spieler in DB speichern
+        async function addPlayer() {
+            const name = document.getElementById('newName').value.trim();
+            const skill = parseInt(document.getElementById('newSkill').value);
+
+            if (!name) return;
+
+            const { error } = await _supabase
+                .from('players')
+                .insert([{ name, skill }]);
+
+            if (!error) {
+                document.getElementById('newName').value = "";
+                fetchPlayers();
+            }
+        }
+
+        // 4. Spieler aus DB löschen
+        async function deletePlayer(id) {
+            if (!confirm("Spieler wirklich löschen?")) return;
+            const { error } = await _supabase.from('players').delete().eq('id', id);
+            if (!error) fetchPlayers();
+        }
+
+        function renderUI() {
+            const pool = document.getElementById('playerPool');
+            const select = document.getElementById('activeSelection');
+            pool.innerHTML = "";
+            select.innerHTML = "";
+
+            players.forEach((p) => {
+                pool.innerHTML += `
+                    <div class="flex justify-between items-center bg-gray-800 p-2 rounded text-sm">
+                        <span>${p.name} (Lvl ${p.skill})</span>
+                        <button onclick="deletePlayer(${p.id})" class="text-red-500 hover:text-red-300 font-bold px-2">×</button>
+                    </div>`;
+                
+                select.innerHTML += `
+                    <label class="flex items-center p-2 hover:bg-gray-700 rounded cursor-pointer border-b border-gray-700/50">
+                        <input type="checkbox" class="w-5 h-5 mr-3 accent-orange-500 p-check" data-name="${p.name}" data-skill="${p.skill}">
+                        <span class="flex-grow text-sm">${p.name}</span>
+                        <span class="text-orange-300 font-mono text-xs font-bold">Lvl ${p.skill}</span>
+                    </label>`;
+            });
+        }
+
+        // Team-Algorithmus (bleibt gleich wie vorher)
+        function balanceTeams() {
+            const checks = document.querySelectorAll('.p-check:checked');
+            let sel = Array.from(checks).map(c => ({ name: c.dataset.name, skill: parseInt(c.dataset.skill) }));
+            if (sel.length < 2) return alert("Wähle mindestens 2 Spieler!");
+            
+            sel.sort((a,b) => b.skill - a.skill);
+            let t1 = [], t2 = [], s1 = 0, s2 = 0;
+            sel.forEach(p => {
+                if (s1 <= s2) { t1.push(p); s1 += p.skill; }
+                else { t2.push(p); s2 += p.skill; }
+            });
+
+            const renderT = (title, list, sum, color) => `
+                <div class="bg-${color}-900/20 p-4 rounded-lg border border-${color}-500/30">
+                    <h3 class="font-bold text-${color}-400 mb-2">${title} (Stärke: ${sum})</h3>
+                    <ul class="text-sm">${list.map(p => `<li class="flex justify-between border-b border-gray-700/20 py-1"><span>${p.name}</span><span>Lvl ${p.skill}</span></li>`).join('')}</ul>
+                </div>`;
+
+            document.getElementById('result').innerHTML = renderT('TEAM A', t1, s1, 'blue') + renderT('TEAM B', t2, s2, 'orange') + 
+                `<p class="text-center text-xs text-gray-500 mt-2 text-italic italic">Differenz: ${Math.abs(s1-s2)} Punkte</p>`;
+        }
+
+        // Initiales Laden
+        fetchPlayers();
+    </script>
+</body>
+</html>
