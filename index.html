@@ -77,7 +77,7 @@
                 <div id="playerPool" class="space-y-2 overflow-y-auto pr-2 max-h-[300px] lg:max-h-full lg:flex-grow"></div>
 
                 <div class="mt-4 lg:mt-auto pt-4 border-t border-gray-700 text-center shrink-0">
-                    <!-- HIER DEINEN PAYPAL.ME NAMEN EINTRAGEN -->
+                    <!-- HIER DEINEN PAYPAL.ME NAMEN EINTRAGEN (Falls noch nicht gemacht) -->
                     <a href="https://paypal.me/DEIN_PAYPAL_ME_NAME" target="_blank" class="inline-block w-full bg-yellow-600 hover:bg-yellow-500 text-white text-[10px] font-black py-2 rounded uppercase tracking-widest transition shadow-lg">
                         💰 Server-Spende (PayPal)
                     </a>
@@ -95,4 +95,88 @@
 
                 <div id="activeSelection" class="space-y-1 overflow-y-auto pr-1 max-h-[300px] lg:max-h-full lg:flex-grow mb-4"></div>
                 
-                <button onclick="generateTeams
+                <button onclick="generateTeams()" class="w-full lg:mt-auto bg-orange-600 hover:bg-orange-500 text-white font-black py-4 rounded-xl shadow-2xl transition transform active:scale-95 text-xl uppercase tracking-tighter shrink-0">
+                    TEAMS GENERIEREN
+                </button>
+            </div>
+
+            <!-- 3. ERGEBNIS -->
+            <div class="card flex flex-col h-auto lg:h-[70vh]">
+                <h2 class="text-xl font-bold mb-4 border-b border-gray-600 pb-2 text-orange-400 text-center uppercase shrink-0">Ergebnis</h2>
+                
+                <div id="result" class="space-y-4 lg:flex-grow overflow-y-auto pr-1 flex flex-col min-h-[150px] lg:min-h-0">
+                    <div class="flex-grow flex items-center justify-center">
+                        <p class="text-gray-500 font-black tracking-tighter italic">Noch keine Teams am Start.</p>
+                    </div>
+                </div>
+                
+                <div id="resultButtons" class="mt-4 pt-4 border-t border-gray-700 shrink-0 hidden">
+                    <button onclick="generateTeams()" class="w-full bg-orange-500 hover:bg-orange-400 text-white font-black py-2 rounded uppercase text-[10px] tracking-widest transition shadow-lg mb-2 border border-orange-400">
+                        🎲 Teams neu mischen (Fair)
+                    </button>
+                    <button onclick="copyToDiscord()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded uppercase text-[10px] tracking-widest transition shadow-lg mb-2">
+                        Teams für Discord kopieren
+                    </button>
+                    <button onclick="copyConnect()" class="w-full bg-gray-700 hover:bg-gray-600 text-white font-black py-2 rounded uppercase text-[10px] tracking-widest transition border border-gray-600 shadow-lg">
+                        Server Connect Befehl kopieren
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- DATENBANK VERKNÜPFUNG ---
+    const SUPABASE_URL = 'https://ldsugaxwovooetmjegwt.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_RAVKlH8iHbbSxcd-7SV2qA_fj1ZkxOE';
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let players = [];
+    let teamA = [];
+    let teamB = [];
+    let teamAName = "Team A";
+    let teamBName = "Team B";
+
+    const funnyNamesPool = [
+        "Die Spray-and-Pray Könige", "Die Silver-Surfer", "Ecke-Camper e.V.", "Blind-Flash Experten",
+        "Die Exit-Fragger", "Eco-Enthusiasten", "P90-Rusher", "Bottom-Fragger United",
+        "Team Whiff", "Die Smoke-Verfehler", "Dreckige Pistolen-Helden", "Die Master-Baited",
+        "Schattenboxer am Spawn", "Die Flash-Opfer", "Full-Buy Verlierer"
+    ];
+
+    async function fetchPlayers() {
+        try {
+            const { data, error } = await _supabase.from('players').select('*').order('name', { ascending: true });
+            if (error) console.error("Datenbank Fehler:", error);
+            if (data) { players = data; renderUI(); }
+        } catch (e) {
+            console.error("Laden fehlgeschlagen:", e);
+        }
+    }
+
+    async function addPlayer() {
+        const n = document.getElementById('newName');
+        const s = document.getElementById('newSkill');
+        if (!n.value.trim()) return;
+        await _supabase.from('players').insert([{ name: n.value.trim(), skill: parseInt(s.value) }]);
+        n.value = ""; fetchPlayers();
+    }
+
+    async function deletePlayer(id, name) {
+        if (confirm(`${name} löschen?`)) {
+            await _supabase.from('players').delete().eq('id', id);
+            fetchPlayers();
+        }
+    }
+
+    async function editPlayer(id, currentName, currentSkill) {
+        const newName = prompt("Name ändern:", currentName);
+        const newSkill = prompt("Level ändern (1-10):", currentSkill);
+        if (newName === null || newSkill === null) return;
+        await _supabase.from('players').update({ name: newName, skill: parseInt(newSkill) }).eq('id', id);
+        fetchPlayers();
+    }
+
+    function renderU
