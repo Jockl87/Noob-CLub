@@ -15,11 +15,7 @@
             margin: 0;
             height: 100vh;
         }
-        .overlay {
-            background-color: rgba(15, 23, 42, 0.85);
-            min-height: 100vh;
-            width: 100%;
-        }
+        .overlay { background-color: rgba(15, 23, 42, 0.85); min-height: 100vh; width: 100%; }
         .card { 
             background-color: rgba(30, 41, 59, 0.8); 
             backdrop-filter: blur(10px);
@@ -30,8 +26,6 @@
         }
         .btn-action { cursor: pointer; transition: transform 0.2s; }
         .btn-action:hover { transform: scale(1.2); }
-        
-        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 10px; }
         ::-webkit-scrollbar-thumb { background: #4a5568; border-radius: 10px; }
@@ -42,7 +36,6 @@
 <div class="overlay p-4 md:p-10 flex flex-col h-full">
     <div class="max-w-7xl mx-auto w-full flex-grow flex flex-col">
         
-        <!-- Header -->
         <div class="text-center mb-8 shrink-0">
             <h1 class="text-7xl font-black text-orange-500 uppercase tracking-tighter mb-1">Noob Club</h1>
             <p class="text-blue-400 font-mono text-lg tracking-[0.4em] uppercase font-bold">Montagsrunde Team Balancer</p>
@@ -50,7 +43,7 @@
 
         <div class="grid lg:grid-cols-3 gap-8 flex-grow pb-8 min-h-0">
             
-            <!-- 1. SPIELER POOL -->
+            <!-- 1. POOL -->
             <div class="card flex flex-col h-auto lg:h-[70vh]">
                 <h2 class="text-xl font-bold mb-4 border-b border-gray-600 pb-2 text-orange-400 flex justify-between items-center shrink-0">
                     <span>Spieler-Pool</span>
@@ -58,8 +51,10 @@
                 </h2>
                 
                 <div class="space-y-3 mb-4 bg-black/40 p-4 rounded-lg shrink-0">
-                    <input type="text" id="newName" placeholder="Name" class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white outline-none focus:border-orange-500 transition">
-                    <div class="flex items-center justify-between">
+                    <input type="text" id="newName" placeholder="Name" class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white outline-none focus:border-orange-500 transition mb-2">
+                    <input type="text" id="newDiscordId" placeholder="Discord ID (Rechtsklick -> ID kopieren)" class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white outline-none focus:border-orange-500 transition text-xs font-mono">
+                    
+                    <div class="flex items-center justify-between mt-2">
                         <div class="flex items-center gap-2">
                             <span class="text-sm text-gray-300">Level:</span>
                             <div class="group relative flex items-center justify-center cursor-help z-20">
@@ -71,13 +66,12 @@
                         </div>
                         <input type="number" id="newSkill" value="3" min="1" max="10" class="w-20 p-2 rounded bg-gray-800 border border-gray-600 text-center text-orange-400 font-bold">
                     </div>
-                    <button onclick="addPlayer()" class="w-full bg-green-600 hover:bg-green-500 py-2 rounded font-bold uppercase text-xs">Hinzufügen</button>
+                    <button onclick="addPlayer()" class="w-full bg-green-600 hover:bg-green-500 py-2 rounded font-bold uppercase text-xs mt-2">Hinzufügen</button>
                 </div>
 
                 <div id="playerPool" class="space-y-2 overflow-y-auto pr-2 max-h-[300px] lg:max-h-full lg:flex-grow"></div>
 
                 <div class="mt-4 lg:mt-auto pt-4 border-t border-gray-700 text-center shrink-0">
-                    <!-- HIER DEINEN PAYPAL.ME NAMEN EINTRAGEN (Falls noch nicht gemacht) -->
                     <a href="https://paypal.me/DEIN_PAYPAL_ME_NAME" target="_blank" class="inline-block w-full bg-yellow-600 hover:bg-yellow-500 text-white text-[10px] font-black py-2 rounded uppercase tracking-widest transition shadow-lg">
                         💰 Server-Spende (PayPal)
                     </a>
@@ -114,9 +108,12 @@
                     <button onclick="generateTeams()" class="w-full bg-orange-500 hover:bg-orange-400 text-white font-black py-2 rounded uppercase text-[10px] tracking-widest transition shadow-lg mb-2 border border-orange-400">
                         🎲 Teams neu mischen (Fair)
                     </button>
-                    <button onclick="copyToDiscord()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded uppercase text-[10px] tracking-widest transition shadow-lg mb-2">
-                        Teams für Discord kopieren
+                    
+                    <!-- NEUER BUTTON FÜR DEN BOT -->
+                    <button onclick="sendToDiscordBot()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded uppercase text-[10px] tracking-widest transition shadow-lg mb-2">
+                        🚀 An Discord Senden & Verschieben
                     </button>
+                    
                     <button onclick="copyConnect()" class="w-full bg-gray-700 hover:bg-gray-600 text-white font-black py-2 rounded uppercase text-[10px] tracking-widest transition border border-gray-600 shadow-lg">
                         Server Connect Befehl kopieren
                     </button>
@@ -128,10 +125,8 @@
 </div>
 
 <script>
-    // --- DATENBANK VERKNÜPFUNG (KORRIGIERT) ---
     const SUPABASE_URL = 'https://ldsugaxwovooetmjegwt.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxkc3VnYXh3b3Zvb2V0bWplZ3d0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwMjk2MjAsImV4cCI6MjA5MTYwNTYyMH0.wzLRaK05yIAn-y_XNxTdVjd5SPnqJGB44IFIDK9_iAk';
-    
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let players = [];
@@ -139,44 +134,31 @@
     let teamB = [];
     let teamAName = "Team A";
     let teamBName = "Team B";
+    let sumA = 0;
+    let sumB = 0;
 
     const funnyNamesPool = [
         "Die Spray-and-Pray Könige", "Die Silver-Surfer", "Ecke-Camper e.V.", "Blind-Flash Experten",
         "Die Exit-Fragger", "Eco-Enthusiasten", "P90-Rusher", "Bottom-Fragger United",
-        "Team Whiff", "Die Smoke-Verfehler", "Dreckige Pistolen-Helden", "Die Master-Baited",
-        "Schattenboxer am Spawn", "Die Flash-Opfer", "Full-Buy Verlierer"
+        "Team Whiff", "Die Smoke-Verfehler", "Dreckige Pistolen-Helden", "Die Master-Baited"
     ];
 
     async function fetchPlayers() {
         try {
-            const { data, error } = await _supabase.from('players').select('*').order('name', { ascending: true });
-            if (error) {
-                console.error("Supabase Error:", error);
-                alert("Verbindung zur Datenbank fehlgeschlagen. Bitte Key/URL prüfen!");
-                return;
-            }
-            if (data) { 
-                players = data; 
-                renderUI(); 
-            }
-        } catch (e) {
-            console.error("Catch Error:", e);
-        }
+            const { data } = await _supabase.from('players').select('*').order('name', { ascending: true });
+            if (data) { players = data; renderUI(); }
+        } catch (e) { console.error(e); }
     }
 
     async function addPlayer() {
-        const n = document.getElementById('newName');
-        const s = document.getElementById('newSkill');
-        if (!n.value.trim()) return;
-        
-        try {
-            const { error } = await _supabase.from('players').insert([{ name: n.value.trim(), skill: parseInt(s.value) }]);
-            if(error) throw error;
-            n.value = ""; 
-            fetchPlayers();
-        } catch(e) {
-            alert("Fehler beim Speichern. Hast du die RLS-Policy in Supabase deaktiviert?");
-        }
+        const n = document.getElementById('newName').value.trim();
+        const s = document.getElementById('newSkill').value;
+        const d = document.getElementById('newDiscordId').value.trim();
+        if (!n) return;
+        await _supabase.from('players').insert([{ name: n, skill: parseInt(s), discord_id: d }]);
+        document.getElementById('newName').value = ""; 
+        document.getElementById('newDiscordId').value = ""; 
+        fetchPlayers();
     }
 
     async function deletePlayer(id, name) {
@@ -186,11 +168,17 @@
         }
     }
 
-    async function editPlayer(id, currentName, currentSkill) {
+    async function editPlayer(id, currentName, currentSkill, currentDiscordId) {
         const newName = prompt("Name ändern:", currentName);
         const newSkill = prompt("Level ändern (1-10):", currentSkill);
+        const newDiscord = prompt("Discord ID ändern:", currentDiscordId || "");
         if (newName === null || newSkill === null) return;
-        await _supabase.from('players').update({ name: newName, skill: parseInt(newSkill) }).eq('id', id);
+        
+        await _supabase.from('players').update({ 
+            name: newName, 
+            skill: parseInt(newSkill),
+            discord_id: newDiscord
+        }).eq('id', id);
         fetchPlayers();
     }
 
@@ -201,34 +189,38 @@
         pool.innerHTML = ""; select.innerHTML = "";
 
         players.forEach((p) => {
+            const discordIcon = p.discord_id ? '<span class="text-indigo-400 ml-1" title="Discord ID hinterlegt">👾</span>' : '';
+            
             pool.innerHTML += `
                 <div class="flex justify-between items-center bg-gray-900/60 p-2 rounded border border-gray-700 text-xs transition hover:border-gray-500">
-                    <span>${p.name} <span class="text-orange-400 font-bold ml-1">Lvl ${p.skill}</span></span>
+                    <span>${p.name} ${discordIcon} <span class="text-orange-400 font-bold ml-1">Lvl ${p.skill}</span></span>
                     <div class="flex gap-3">
-                        <span onclick="editPlayer(${p.id}, '${p.name}', ${p.skill})" class="btn-action text-blue-400">✎</span>
+                        <span onclick="editPlayer(${p.id}, '${p.name}', ${p.skill}, '${p.discord_id}')" class="btn-action text-blue-400">✎</span>
                         <span onclick="deletePlayer(${p.id}, '${p.name}')" class="btn-action text-red-500 text-lg">×</span>
                     </div>
                 </div>`;
             
             select.innerHTML += `
                 <label class="flex items-center p-2 hover:bg-white/5 rounded cursor-pointer border-b border-white/5 transition">
-                    <input type="checkbox" class="w-5 h-5 mr-3 accent-orange-500 p-check" data-name="${p.name}" data-skill="${p.skill}">
-                    <span class="flex-grow text-sm font-bold tracking-wide">${p.name}</span>
+                    <input type="checkbox" class="w-5 h-5 mr-3 accent-orange-500 p-check" 
+                           data-name="${p.name}" data-skill="${p.skill}" data-discord="${p.discord_id || ''}">
+                    <span class="flex-grow text-sm font-bold tracking-wide">${p.name} ${discordIcon}</span>
                     <span class="text-xs font-mono text-orange-400 font-bold bg-black/40 px-2 rounded border border-white/10">Lvl ${p.skill}</span>
                 </label>`;
         });
     }
 
-    function toggleAll(status) {
-        document.querySelectorAll('.p-check').forEach(cb => cb.checked = status);
-    }
+    function toggleAll(status) { document.querySelectorAll('.p-check').forEach(cb => cb.checked = status); }
 
     function generateTeams() {
         const checks = document.querySelectorAll('.p-check:checked');
-        let selected = Array.from(checks).map(c => ({ name: c.dataset.name, skill: parseInt(c.dataset.skill) }));
+        let selected = Array.from(checks).map(c => ({ 
+            name: c.dataset.name, 
+            skill: parseInt(c.dataset.skill),
+            discord_id: c.dataset.discord
+        }));
         if (selected.length < 2) return alert("Wähle mindestens 2 Spieler!");
 
-        // MONTE CARLO BALANCING MIT FESTER SPIELERANZAHL
         let bestDiff = Infinity;
         let candidates = [];
         const halfSize = Math.ceil(selected.length / 2); 
@@ -236,42 +228,26 @@
         for (let i = 0; i < 1000; i++) {
             let shuffled = [...selected].sort(() => 0.5 - Math.random());
             let tA, tB;
-            
-            if (Math.random() > 0.5) {
-                tA = shuffled.slice(0, halfSize);
-                tB = shuffled.slice(halfSize);
-            } else {
-                tA = shuffled.slice(halfSize);
-                tB = shuffled.slice(0, halfSize);
-            }
+            if (Math.random() > 0.5) { tA = shuffled.slice(0, halfSize); tB = shuffled.slice(halfSize); } 
+            else { tA = shuffled.slice(halfSize); tB = shuffled.slice(0, halfSize); }
             
             let sA = tA.reduce((sum, p) => sum + p.skill, 0);
             let sB = tB.reduce((sum, p) => sum + p.skill, 0);
-            
             let diff = Math.abs(sA - sB);
             
-            if (diff < bestDiff) {
-                bestDiff = diff;
-                candidates = [{ tA, tB }];
-            } else if (diff === bestDiff) {
-                candidates.push({ tA, tB });
-            }
+            if (diff < bestDiff) { bestDiff = diff; candidates = [{ tA, tB }]; } 
+            else if (diff === bestDiff) { candidates.push({ tA, tB }); }
         }
 
         let chosen = candidates[Math.floor(Math.random() * candidates.length)];
-        teamA = chosen.tA;
-        teamB = chosen.tB;
+        teamA = chosen.tA; teamB = chosen.tB;
 
         const shuffledNames = [...funnyNamesPool].sort(() => 0.5 - Math.random());
-        teamAName = shuffledNames[0];
-        teamBName = shuffledNames[1];
+        teamAName = shuffledNames[0]; teamBName = shuffledNames[1];
 
         document.getElementById('resultButtons').classList.remove('hidden');
         displayTeams();
-        
-        if(window.innerWidth < 1024) {
-            document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
-        }
+        if(window.innerWidth < 1024) document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
     }
 
     function swapPlayer(name, fromTeam) {
@@ -285,16 +261,33 @@
         displayTeams();
     }
 
-    function copyToDiscord() {
-        const sumA = teamA.reduce((a, b) => a + b.skill, 0);
-        const sumB = teamB.reduce((a, b) => a + b.skill, 0);
-        let text = `**--- Noob Club Teams ---**\n\n**${teamAName.toUpperCase()} (Pwr: ${sumA})**\n`;
-        teamA.forEach(p => text += `• ${p.name} (Lvl ${p.skill})\n`);
-        text += `\n**${teamBName.toUpperCase()} (Pwr: ${sumB})**\n`;
-        teamB.forEach(p => text += `• ${p.name} (Lvl ${p.skill})\n`);
-        text += `\n*Differenz: ${Math.abs(sumA - sumB)}*`;
-        text += `\n\n**Nicht vergessen: !ready eingeben zum Starten!**`;
-        navigator.clipboard.writeText(text).then(() => alert("Teams für Discord kopiert!"));
+    // DIE NEUE BOT FUNKTION
+    async function sendToDiscordBot() {
+        if (teamA.length === 0 || teamB.length === 0) return;
+        
+        // Extrahiere IDs und Namen
+        const idsA = teamA.map(p => p.discord_id).filter(id => id !== "");
+        const idsB = teamB.map(p => p.discord_id).filter(id => id !== "");
+        const namesA = teamA.map(p => p.name);
+        const namesB = teamB.map(p => p.name);
+
+        try {
+            const { error } = await _supabase.from('live_match').insert([{ 
+                team_a_ids: idsA, 
+                team_b_ids: idsB,
+                team_a_names: namesA,
+                team_b_names: namesB,
+                sum_a: sumA,
+                sum_b: sumB,
+                status: 'pending' 
+            }]);
+
+            if (error) throw error;
+            alert("✅ Teams wurden an den Discord-Bot gesendet! Ein Admin kann die Spieler jetzt verschieben.");
+        } catch (e) {
+            console.error(e);
+            alert("❌ Fehler beim Senden an die Datenbank.");
+        }
     }
 
     function copyConnect() {
@@ -303,8 +296,8 @@
 
     function displayTeams() {
         const resDiv = document.getElementById('result');
-        const sumA = teamA.reduce((a, b) => a + b.skill, 0);
-        const sumB = teamB.reduce((a, b) => a + b.skill, 0);
+        sumA = teamA.reduce((a, b) => a + b.skill, 0);
+        sumB = teamB.reduce((a, b) => a + b.skill, 0);
 
         const renderList = (list, teamLabel) => list.map(p => `
             <li class="flex justify-between items-center bg-black/40 p-2 rounded my-1 text-xs border border-white/5">
@@ -317,16 +310,14 @@
             <div class="flex-grow">
                 <div class="p-3 bg-blue-900/30 rounded-lg border-t-4 border-blue-500 shadow-lg">
                     <div class="flex justify-between font-black text-blue-400 mb-2 uppercase italic text-[11px] tracking-tight">
-                        <span>${teamAName}</span>
-                        <span class="text-white">Pwr: ${sumA}</span>
+                        <span>${teamAName}</span><span class="text-white">Pwr: ${sumA}</span>
                     </div>
                     <ul>${renderList(teamA, 'A')}</ul>
                 </div>
                 
                 <div class="p-3 bg-orange-900/30 rounded-lg border-t-4 border-orange-500 shadow-lg mt-4">
                     <div class="flex justify-between font-black text-orange-400 mb-2 uppercase italic text-[11px] tracking-tight">
-                        <span>${teamBName}</span>
-                        <span class="text-white">Pwr: ${sumB}</span>
+                        <span>${teamBName}</span><span class="text-white">Pwr: ${sumB}</span>
                     </div>
                     <ul>${renderList(teamB, 'B')}</ul>
                 </div>
@@ -339,7 +330,6 @@
         `;
     }
 
-    // Start
     fetchPlayers();
 </script>
 
