@@ -59,12 +59,10 @@
                     <input type="text" id="newName" placeholder="Name" class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white outline-none focus:border-orange-500 transition shadow-inner">
                     <div class="flex items-center justify-between">
                         
-                        <!-- VERBESSERTER INFO TOOLTIP -->
                         <div class="flex items-center gap-2">
                             <span class="text-sm font-bold text-gray-300">Level-Info:</span>
                             <div class="group relative flex items-center justify-center cursor-help z-20">
                                 <span class="text-yellow-400 hover:text-yellow-300 text-[11px] font-black border-2 border-yellow-500 hover:border-yellow-300 rounded-full w-5 h-5 flex items-center justify-center transition animate-pulse shadow-[0_0_8px_rgba(234,179,8,0.5)]">i</span>
-                                <!-- Tooltip ist jetzt breiter und Text ist größer (text-xs) -->
                                 <div class="absolute bottom-full left-0 lg:-left-4 mb-2 w-56 lg:w-72 p-4 bg-gray-900 border border-gray-500 text-gray-200 text-xs rounded shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all leading-relaxed">
                                     Unser internes Rating: Die stärksten Spieler der Runde setzen das Max-Level (10). Davon ausgehend skalieren wir alle anderen Spieler nach unten.
                                     <br><br>
@@ -122,7 +120,7 @@
                     </button>
                 </div>
 
-                <!-- AUFFÄLLIGER CONNECT BUTTON MIT MAUS & CS2 -->
+                <!-- CONNECT BUTTON -->
                 <div class="mt-4 lg:mt-auto pt-4 border-t border-gray-700 shrink-0">
                     <button onclick="copyConnect()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3 rounded uppercase text-xs tracking-widest transition shadow-[0_0_15px_rgba(5,150,105,0.4)] border border-emerald-400 hover:scale-[1.02]">
                         🖱️ CS2 Server Connect kopieren
@@ -135,9 +133,9 @@
 </div>
 
 <script>
-    // --- DATENBANK ---
+    // --- HIER IST DEIN ECHTER KEY WIEDER DRIN! ---
     const SUPABASE_URL = 'https://ldsugaxwovooetmjegwt.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxkc3VnYXh3b3Zvb2V0bWplZ3d0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwMjk2MjAsImV4cCI6MjA5MTYwNTYyMH0.wzLRaK05yIAn-y_XNxTdVjd5SPnqJGB44IFIDK9_iAk';
+    const SUPABASE_KEY = 'sb_publishable_RAVKlH8iHbbSxcd-7SV2qA_fj1ZkxOE';
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let players = [];
@@ -153,7 +151,6 @@
         "Schattenboxer am Spawn", "Die Flash-Opfer", "Full-Buy Verlierer"
     ];
 
-    // GEHEIME BERECHNUNG: Lvl 10 ist intern eine 11, nach außen eine 10.
     function getHiddenPower(skill) {
         if (skill >= 10) return 11;
         return skill;
@@ -162,8 +159,9 @@
     async function fetchPlayers() {
         try {
             const { data, error } = await _supabase.from('players').select('*').order('name', { ascending: true });
+            if (error) console.error("Datenbank Fehler:", error);
             if (data) { players = data; renderUI(); }
-        } catch (e) { console.error(e); }
+        } catch (e) { console.error("Fetch Fehler:", e); }
     }
 
     async function addPlayer() {
@@ -238,3 +236,108 @@
                 tB = shuffled.slice(halfSize);
             } else {
                 tA = shuffled.slice(halfSize);
+                tB = shuffled.slice(0, halfSize);
+            }
+
+            if (lvl10Count === 2) {
+                const a10s = tA.filter(p => p.skill === 10).length;
+                const b10s = tB.filter(p => p.skill === 10).length;
+                if (a10s !== 1 || b10s !== 1) continue; 
+            }
+            
+            let sA_hidden = tA.reduce((sum, p) => sum + getHiddenPower(p.skill), 0);
+            let sB_hidden = tB.reduce((sum, p) => sum + getHiddenPower(p.skill), 0);
+            let diff = Math.abs(sA_hidden - sB_hidden);
+            
+            if (diff < bestDiff) {
+                bestDiff = diff;
+                candidates = [{ tA, tB }];
+            } else if (diff === bestDiff) {
+                candidates.push({ tA, tB });
+            }
+        }
+
+        let chosen = candidates[Math.floor(Math.random() * candidates.length)];
+        teamA = chosen.tA;
+        teamB = chosen.tB;
+
+        const shuffledNames = [...funnyNamesPool].sort(() => 0.5 - Math.random());
+        teamAName = shuffledNames[0];
+        teamBName = shuffledNames[1];
+
+        document.getElementById('resultButtons').classList.remove('hidden');
+        displayTeams();
+        
+        if(window.innerWidth < 1024) document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function swapPlayer(name, fromTeam) {
+        if (fromTeam === 'A') {
+            const idx = teamA.findIndex(p => p.name === name);
+            teamB.push(teamA.splice(idx, 1)[0]);
+        } else {
+            const idx = teamB.findIndex(p => p.name === name);
+            teamA.push(teamB.splice(idx, 1)[0]);
+        }
+        displayTeams();
+    }
+
+    function copyToDiscord() {
+        const sumA = teamA.reduce((a, b) => a + b.skill, 0);
+        const sumB = teamB.reduce((a, b) => a + b.skill, 0);
+        let text = `**--- Noob Club Teams ---**\n\n**🔵 ${teamAName.toUpperCase()} (Pwr: ${sumA})**\n`;
+        teamA.forEach(p => text += `• ${p.name} (Lvl ${p.skill})\n`);
+        text += `\n**🟠 ${teamBName.toUpperCase()} (Pwr: ${sumB})**\n`;
+        teamB.forEach(p => text += `• ${p.name} (Lvl ${p.skill})\n`);
+        text += `\n*Pwr-Differenz: ${Math.abs(sumA - sumB)}*`;
+        text += `\n\n**Nicht vergessen: !ready eingeben zum Starten!**`;
+        navigator.clipboard.writeText(text).then(() => alert("Teams für Discord kopiert!"));
+    }
+
+    function copyConnect() {
+        navigator.clipboard.writeText("connect montagsrunde.noob.club:26807; password Heddesheim").then(() => alert("Connect-Befehl kopiert!"));
+    }
+
+    function displayTeams() {
+        const resDiv = document.getElementById('result');
+        const sumA = teamA.reduce((a, b) => a + b.skill, 0);
+        const sumB = teamB.reduce((a, b) => a + b.skill, 0);
+
+        const renderList = (list, teamLabel) => list.map(p => `
+            <li class="flex justify-between items-center bg-black/50 p-2 rounded my-1 text-xs border border-white/5 shadow-sm">
+                <span><span class="text-orange-400 font-bold mr-2">${p.skill}</span> ${p.name}</span>
+                <button onclick="swapPlayer('${p.name}', '${teamLabel}')" class="text-lg hover:text-orange-500 px-2 transition">⇄</button>
+            </li>
+        `).join('');
+
+        resDiv.innerHTML = `
+            <div class="flex-grow">
+                <div class="p-3 bg-blue-900/40 rounded-lg border-t-4 border-blue-500 shadow-xl">
+                    <div class="flex justify-between font-black text-blue-400 mb-2 uppercase italic text-[11px] tracking-tight drop-shadow-md">
+                        <span>${teamAName}</span>
+                        <span class="text-white">Pwr: ${sumA}</span>
+                    </div>
+                    <ul>${renderList(teamA, 'A')}</ul>
+                </div>
+                
+                <div class="p-3 bg-orange-900/40 rounded-lg border-t-4 border-orange-500 shadow-xl mt-4">
+                    <div class="flex justify-between font-black text-orange-400 mb-2 uppercase italic text-[11px] tracking-tight drop-shadow-md">
+                        <span>${teamBName}</span>
+                        <span class="text-white">Pwr: ${sumB}</span>
+                    </div>
+                    <ul>${renderList(teamB, 'B')}</ul>
+                </div>
+
+                <div class="text-center p-2 bg-black/60 rounded border border-gray-700 mt-4 shadow-inner">
+                    <span class="text-[10px] text-gray-400 uppercase tracking-widest block mb-1">Differenz:</span>
+                    <span class="ml-2 font-black text-xl text-orange-500 drop-shadow-md">${Math.abs(sumA - sumB)}</span>
+                </div>
+            </div>
+        `;
+    }
+
+    fetchPlayers();
+</script>
+
+</body>
+</html>
