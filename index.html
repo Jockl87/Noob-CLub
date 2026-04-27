@@ -55,29 +55,32 @@
                     <span id="playerCount" class="text-xs bg-blue-600 px-2 py-1 rounded text-white">0</span>
                 </h2>
                 
-                <div class="space-y-3 mb-4 bg-black/50 p-4 rounded-lg shrink-0">
-                    <input type="text" id="newName" placeholder="Name" class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white outline-none focus:border-orange-500 transition">
+                <div class="space-y-3 mb-4 bg-black/50 p-4 rounded-lg shrink-0 border border-white/10 shadow-inner">
+                    <input type="text" id="newName" placeholder="Name" class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white outline-none focus:border-orange-500 transition shadow-inner">
                     <div class="flex items-center justify-between">
+                        
+                        <!-- VERBESSERTER INFO TOOLTIP -->
                         <div class="flex items-center gap-2">
-                            <span class="text-sm text-gray-300">Level:</span>
+                            <span class="text-sm font-bold text-gray-300">Level-Info:</span>
                             <div class="group relative flex items-center justify-center cursor-help z-20">
-                                <span class="text-gray-400 hover:text-blue-400 text-[10px] font-black border border-gray-500 hover:border-blue-400 rounded-full w-4 h-4 flex items-center justify-center transition">i</span>
+                                <span class="text-yellow-400 hover:text-yellow-300 text-[11px] font-black border-2 border-yellow-500 hover:border-yellow-300 rounded-full w-5 h-5 flex items-center justify-center transition animate-pulse shadow-[0_0_8px_rgba(234,179,8,0.5)]">i</span>
                                 <div class="absolute bottom-full left-0 lg:-left-4 mb-2 w-48 lg:w-64 p-3 bg-gray-900 border border-gray-600 text-gray-300 text-[10px] rounded shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all leading-relaxed">
                                     Unser internes Rating: Die stärksten Spieler der Runde setzen das Max-Level (10). Davon ausgehend skalieren wir alle anderen Spieler nach unten.
                                     <br><br>
-                                    <span class="text-red-500 font-black text-xs uppercase tracking-widest">MARKUS, DU BIST LEVEL 10 !</span>
+                                    <span class="text-red-500 font-black text-xs uppercase tracking-widest drop-shadow-md">MARKUS, DU BIST LEVEL 10 !</span>
                                 </div>
                             </div>
                         </div>
-                        <input type="number" id="newSkill" value="3" min="1" max="10" class="w-20 p-2 rounded bg-gray-800 border border-gray-600 text-center text-orange-400 font-bold">
+
+                        <input type="number" id="newSkill" value="3" min="1" max="10" class="w-20 p-2 rounded bg-gray-800 border border-gray-600 text-center text-orange-400 font-black shadow-inner">
                     </div>
-                    <button onclick="addPlayer()" class="w-full bg-green-600 hover:bg-green-500 py-2 rounded font-bold uppercase text-xs shadow-lg">Hinzufügen</button>
+                    <button onclick="addPlayer()" class="w-full bg-green-600 hover:bg-green-500 py-2 rounded font-bold uppercase text-xs shadow-lg mt-1 transition hover:scale-[1.02]">Hinzufügen</button>
                 </div>
 
                 <div id="playerPool" class="space-y-2 overflow-y-auto pr-2 max-h-[300px] lg:max-h-full lg:flex-grow"></div>
 
                 <div class="mt-4 lg:mt-auto pt-4 border-t border-gray-700 text-center shrink-0">
-                    <a href="https://paypal.me/DEIN_PAYPAL_ME_NAME" target="_blank" class="inline-block w-full bg-yellow-600 hover:bg-yellow-500 text-white text-[10px] font-black py-2 rounded uppercase tracking-widest transition shadow-lg">
+                    <a href="https://paypal.me/DEIN_PAYPAL_ME_NAME" target="_blank" class="inline-block w-full bg-yellow-600 hover:bg-yellow-500 text-white text-[10px] font-black py-2 rounded uppercase tracking-widest transition shadow-lg hover:scale-[1.02]">
                         💰 CS2 Server-Spende (PayPal)
                     </a>
                 </div>
@@ -94,7 +97,7 @@
 
                 <div id="activeSelection" class="space-y-1 overflow-y-auto pr-1 max-h-[300px] lg:max-h-full lg:flex-grow mb-4"></div>
                 
-                <button onclick="generateTeams()" class="w-full lg:mt-auto bg-orange-600 hover:bg-orange-500 text-white font-black py-4 rounded-xl shadow-2xl transition transform active:scale-95 text-xl uppercase tracking-tighter shrink-0">
+                <button onclick="generateTeams()" class="w-full lg:mt-auto bg-orange-600 hover:bg-orange-500 text-white font-black py-4 rounded-xl shadow-2xl transition transform hover:scale-[1.02] active:scale-95 text-xl uppercase tracking-tighter shrink-0 border border-orange-500/50">
                     TEAMS GENERIEREN
                 </button>
             </div>
@@ -109,20 +112,19 @@
                     </div>
                 </div>
                 
-                <!-- Buttons unter dem Ergebnis -->
                 <div id="resultButtons" class="mt-2 shrink-0 hidden">
-                    <button onclick="generateTeams()" class="w-full bg-orange-500 hover:bg-orange-400 text-white font-black py-2 rounded uppercase text-[10px] tracking-widest transition shadow-lg mb-2 border border-orange-400">
+                    <button onclick="generateTeams()" class="w-full bg-orange-500 hover:bg-orange-400 text-white font-black py-2 rounded uppercase text-[10px] tracking-widest transition shadow-lg mb-2 border border-orange-400 hover:scale-[1.02]">
                         🎲 Teams neu mischen
                     </button>
-                    <button onclick="copyToDiscord()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded uppercase text-[10px] tracking-widest transition shadow-lg">
+                    <button onclick="copyToDiscord()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded uppercase text-[10px] tracking-widest transition shadow-lg hover:scale-[1.02]">
                         Teams für Discord kopieren
                     </button>
                 </div>
 
-                <!-- Connect Button ist IMMER sichtbar ganz unten -->
+                <!-- AUFFÄLLIGER CONNECT BUTTON -->
                 <div class="mt-4 lg:mt-auto pt-4 border-t border-gray-700 shrink-0">
-                    <button onclick="copyConnect()" class="w-full bg-gray-700 hover:bg-gray-600 text-white font-black py-2 rounded uppercase text-[10px] tracking-widest transition border border-gray-600 shadow-lg">
-                        Server Connect Befehl kopieren
+                    <button onclick="copyConnect()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3 rounded uppercase text-xs tracking-widest transition shadow-[0_0_15px_rgba(5,150,105,0.4)] border border-emerald-400 hover:scale-[1.02]">
+                        🎮 Server Connect kopieren
                     </button>
                 </div>
             </div>
@@ -238,14 +240,12 @@
                 tB = shuffled.slice(0, halfSize);
             }
 
-            // Wenn exakt ZWEI Lvl 10er da sind, niemals ins gleiche Team
             if (lvl10Count === 2) {
                 const a10s = tA.filter(p => p.skill === 10).length;
                 const b10s = tB.filter(p => p.skill === 10).length;
                 if (a10s !== 1 || b10s !== 1) continue; 
             }
             
-            // Versteckte Berechnung für die Balance (Lvl 10 = 11 Pwr)
             let sA_hidden = tA.reduce((sum, p) => sum + getHiddenPower(p.skill), 0);
             let sB_hidden = tB.reduce((sum, p) => sum + getHiddenPower(p.skill), 0);
             let diff = Math.abs(sA_hidden - sB_hidden);
@@ -262,7 +262,6 @@
         teamA = chosen.tA;
         teamB = chosen.tB;
 
-        // Lustige Namen würfeln
         const shuffledNames = [...funnyNamesPool].sort(() => 0.5 - Math.random());
         teamAName = shuffledNames[0];
         teamBName = shuffledNames[1];
@@ -285,7 +284,6 @@
     }
 
     function copyToDiscord() {
-        // Öffentliche Anzeige berechnet normal
         const sumA = teamA.reduce((a, b) => a + b.skill, 0);
         const sumB = teamB.reduce((a, b) => a + b.skill, 0);
         let text = `**--- Noob Club Teams ---**\n\n**🔵 ${teamAName.toUpperCase()} (Pwr: ${sumA})**\n`;
@@ -303,7 +301,6 @@
 
     function displayTeams() {
         const resDiv = document.getElementById('result');
-        // Öffentliche Anzeige berechnet normal
         const sumA = teamA.reduce((a, b) => a + b.skill, 0);
         const sumB = teamB.reduce((a, b) => a + b.skill, 0);
 
@@ -340,7 +337,6 @@
         `;
     }
 
-    // Start
     fetchPlayers();
 </script>
 
