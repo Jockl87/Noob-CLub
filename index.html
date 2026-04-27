@@ -15,13 +15,11 @@
             margin: 0;
             height: 100vh;
         }
-        /* Der dunkle Schleier wurde von 0.85 auf 0.55 reduziert für mehr Sichtbarkeit */
         .overlay {
             background-color: rgba(15, 23, 42, 0.55);
             min-height: 100vh;
             width: 100%;
         }
-        /* Die Fenster sind jetzt transparenter (0.55 statt 0.8) und der Blur leicht reduziert */
         .card { 
             background-color: rgba(30, 41, 59, 0.55); 
             backdrop-filter: blur(8px);
@@ -33,7 +31,6 @@
         .btn-action { cursor: pointer; transition: transform 0.2s; }
         .btn-action:hover { transform: scale(1.2); }
         
-        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 10px; }
         ::-webkit-scrollbar-thumb { background: #4a5568; border-radius: 10px; }
@@ -44,7 +41,6 @@
 <div class="overlay p-4 md:p-10 flex flex-col h-full">
     <div class="max-w-7xl mx-auto w-full flex-grow flex flex-col">
         
-        <!-- Header -->
         <div class="text-center mb-8 shrink-0">
             <h1 class="text-7xl font-black text-orange-500 uppercase tracking-tighter mb-1 drop-shadow-lg">Noob Club</h1>
             <p class="text-blue-400 font-mono text-lg tracking-[0.4em] uppercase font-bold drop-shadow-md">Montagsrunde Team Balancer</p>
@@ -66,8 +62,9 @@
                             <span class="text-sm text-gray-300">Level:</span>
                             <div class="group relative flex items-center justify-center cursor-help z-20">
                                 <span class="text-gray-400 hover:text-blue-400 text-[10px] font-black border border-gray-500 hover:border-blue-400 rounded-full w-4 h-4 flex items-center justify-center transition">i</span>
-                                <div class="absolute bottom-full left-0 lg:-left-4 mb-2 w-48 lg:w-56 p-2 bg-gray-900 border border-gray-600 text-gray-300 text-[10px] rounded shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all leading-tight">
-                                    Unser internes Rating: Die stärksten Spieler der Runde setzen das Max-Level (10). Davon ausgehend skalieren wir alle anderen Spieler nach unten.
+                                <div class="absolute bottom-full left-0 lg:-left-4 mb-2 w-48 lg:w-56 p-3 bg-gray-900 border border-gray-600 text-gray-300 text-[10px] rounded shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all leading-relaxed">
+                                    Unser internes Rating (1-10). <br><br>
+                                    <span class="text-orange-400 font-bold">Besonderheit:</span> Weil ein Level-10-Spieler stärker ist als zwei Level-5-Spieler, wird ein 10er intern mit "12 Power" berechnet, um extrem faire Teams zu garantieren.
                                 </div>
                             </div>
                         </div>
@@ -79,7 +76,6 @@
                 <div id="playerPool" class="space-y-2 overflow-y-auto pr-2 max-h-[300px] lg:max-h-full lg:flex-grow"></div>
 
                 <div class="mt-4 lg:mt-auto pt-4 border-t border-gray-700 text-center shrink-0">
-                    <!-- HIER DEINEN PAYPAL.ME NAMEN EINTRAGEN (Falls noch nicht gemacht) -->
                     <a href="https://paypal.me/DEIN_PAYPAL_ME_NAME" target="_blank" class="inline-block w-full bg-yellow-600 hover:bg-yellow-500 text-white text-[10px] font-black py-2 rounded uppercase tracking-widest transition shadow-lg">
                         💰 Server-Spende (PayPal)
                     </a>
@@ -130,55 +126,33 @@
 </div>
 
 <script>
-    // --- DATENBANK VERKNÜPFUNG ---
     const SUPABASE_URL = 'https://ldsugaxwovooetmjegwt.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxkc3VnYXh3b3Zvb2V0bWplZ3d0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwMjk2MjAsImV4cCI6MjA5MTYwNTYyMH0.wzLRaK05yIAn-y_XNxTdVjd5SPnqJGB44IFIDK9_iAk';
-    
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let players = [];
     let teamA = [];
     let teamB = [];
-    let teamAName = "Team A";
-    let teamBName = "Team B";
 
-    const funnyNamesPool = [
-        "Die Spray-and-Pray Könige", "Die Silver-Surfer", "Ecke-Camper e.V.", "Blind-Flash Experten",
-        "Die Exit-Fragger", "Eco-Enthusiasten", "P90-Rusher", "Bottom-Fragger United",
-        "Team Whiff", "Die Smoke-Verfehler", "Dreckige Pistolen-Helden", "Die Master-Baited",
-        "Schattenboxer am Spawn", "Die Flash-Opfer", "Full-Buy Verlierer"
-    ];
+    // Hilfsfunktion: Berechnet den WAHREN Einfluss eines Spielers (Lvl 10 = 12 Punkte)
+    function getPower(skill) {
+        if (skill >= 10) return 12;
+        return skill;
+    }
 
     async function fetchPlayers() {
         try {
             const { data, error } = await _supabase.from('players').select('*').order('name', { ascending: true });
-            if (error) {
-                console.error("Supabase Error:", error);
-                alert("Verbindung zur Datenbank fehlgeschlagen. Bitte Key/URL prüfen!");
-                return;
-            }
-            if (data) { 
-                players = data; 
-                renderUI(); 
-            }
-        } catch (e) {
-            console.error("Catch Error:", e);
-        }
+            if (data) { players = data; renderUI(); }
+        } catch (e) { console.error(e); }
     }
 
     async function addPlayer() {
         const n = document.getElementById('newName');
         const s = document.getElementById('newSkill');
         if (!n.value.trim()) return;
-        
-        try {
-            const { error } = await _supabase.from('players').insert([{ name: n.value.trim(), skill: parseInt(s.value) }]);
-            if(error) throw error;
-            n.value = ""; 
-            fetchPlayers();
-        } catch(e) {
-            alert("Fehler beim Speichern. Hast du die RLS-Policy in Supabase deaktiviert?");
-        }
+        await _supabase.from('players').insert([{ name: n.value.trim(), skill: parseInt(s.value) }]);
+        n.value = ""; fetchPlayers();
     }
 
     async function deletePlayer(id, name) {
@@ -230,12 +204,15 @@
         let selected = Array.from(checks).map(c => ({ name: c.dataset.name, skill: parseInt(c.dataset.skill) }));
         if (selected.length < 2) return alert("Wähle mindestens 2 Spieler!");
 
-        // MONTE CARLO BALANCING MIT FESTER SPIELERANZAHL
+        // Zähle, wie viele Lvl 10er dabei sind
+        const lvl10Count = selected.filter(p => p.skill === 10).length;
+
         let bestDiff = Infinity;
         let candidates = [];
         const halfSize = Math.ceil(selected.length / 2); 
 
-        for (let i = 0; i < 1000; i++) {
+        // Wir probieren 2000 Kombinationen aus, um die fairste zu finden
+        for (let i = 0; i < 2000; i++) {
             let shuffled = [...selected].sort(() => 0.5 - Math.random());
             let tA, tB;
             
@@ -246,10 +223,17 @@
                 tA = shuffled.slice(halfSize);
                 tB = shuffled.slice(0, halfSize);
             }
+
+            // REGEL: Wenn es exakt ZWEI Lvl 10er gibt, dürfen sie nicht ins selbe Team!
+            if (lvl10Count === 2) {
+                const a10s = tA.filter(p => p.skill === 10).length;
+                const b10s = tB.filter(p => p.skill === 10).length;
+                if (a10s !== 1 || b10s !== 1) continue; // Überspringt diese Variante, probiert die nächste
+            }
             
-            let sA = tA.reduce((sum, p) => sum + p.skill, 0);
-            let sB = tB.reduce((sum, p) => sum + p.skill, 0);
-            
+            // Berechnung mit der WAHREN Stärke (getPower Funktion)
+            let sA = tA.reduce((sum, p) => sum + getPower(p.skill), 0);
+            let sB = tB.reduce((sum, p) => sum + getPower(p.skill), 0);
             let diff = Math.abs(sA - sB);
             
             if (diff < bestDiff) {
@@ -264,16 +248,10 @@
         teamA = chosen.tA;
         teamB = chosen.tB;
 
-        const shuffledNames = [...funnyNamesPool].sort(() => 0.5 - Math.random());
-        teamAName = shuffledNames[0];
-        teamBName = shuffledNames[1];
-
         document.getElementById('resultButtons').classList.remove('hidden');
         displayTeams();
         
-        if(window.innerWidth < 1024) {
-            document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
-        }
+        if(window.innerWidth < 1024) document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
     }
 
     function swapPlayer(name, fromTeam) {
@@ -288,13 +266,13 @@
     }
 
     function copyToDiscord() {
-        const sumA = teamA.reduce((a, b) => a + b.skill, 0);
-        const sumB = teamB.reduce((a, b) => a + b.skill, 0);
-        let text = `**--- Noob Club Teams ---**\n\n**${teamAName.toUpperCase()} (Pwr: ${sumA})**\n`;
+        const sumA = teamA.reduce((a, b) => a + getPower(b.skill), 0);
+        const sumB = teamB.reduce((a, b) => a + getPower(b.skill), 0);
+        let text = `**--- Noob Club Teams ---**\n\n**🔵 TEAM BLAU (Pwr: ${sumA})**\n`;
         teamA.forEach(p => text += `• ${p.name} (Lvl ${p.skill})\n`);
-        text += `\n**${teamBName.toUpperCase()} (Pwr: ${sumB})**\n`;
+        text += `\n**🟠 TEAM ORANGE (Pwr: ${sumB})**\n`;
         teamB.forEach(p => text += `• ${p.name} (Lvl ${p.skill})\n`);
-        text += `\n*Differenz: ${Math.abs(sumA - sumB)}*`;
+        text += `\n*Pwr-Differenz: ${Math.abs(sumA - sumB)}*`;
         text += `\n\n**Nicht vergessen: !ready eingeben zum Starten!**`;
         navigator.clipboard.writeText(text).then(() => alert("Teams für Discord kopiert!"));
     }
@@ -305,8 +283,8 @@
 
     function displayTeams() {
         const resDiv = document.getElementById('result');
-        const sumA = teamA.reduce((a, b) => a + b.skill, 0);
-        const sumB = teamB.reduce((a, b) => a + b.skill, 0);
+        const sumA = teamA.reduce((a, b) => a + getPower(b.skill), 0);
+        const sumB = teamB.reduce((a, b) => a + getPower(b.skill), 0);
 
         const renderList = (list, teamLabel) => list.map(p => `
             <li class="flex justify-between items-center bg-black/50 p-2 rounded my-1 text-xs border border-white/5 shadow-sm">
@@ -319,7 +297,7 @@
             <div class="flex-grow">
                 <div class="p-3 bg-blue-900/40 rounded-lg border-t-4 border-blue-500 shadow-xl">
                     <div class="flex justify-between font-black text-blue-400 mb-2 uppercase italic text-[11px] tracking-tight drop-shadow-md">
-                        <span>${teamAName}</span>
+                        <span>TEAM BLAU</span>
                         <span class="text-white">Pwr: ${sumA}</span>
                     </div>
                     <ul>${renderList(teamA, 'A')}</ul>
@@ -327,7 +305,7 @@
                 
                 <div class="p-3 bg-orange-900/40 rounded-lg border-t-4 border-orange-500 shadow-xl mt-4">
                     <div class="flex justify-between font-black text-orange-400 mb-2 uppercase italic text-[11px] tracking-tight drop-shadow-md">
-                        <span>${teamBName}</span>
+                        <span>TEAM ORANGE</span>
                         <span class="text-white">Pwr: ${sumB}</span>
                     </div>
                     <ul>${renderList(teamB, 'B')}</ul>
