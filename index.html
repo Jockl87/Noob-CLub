@@ -120,7 +120,7 @@
                     </button>
                 </div>
 
-                <!-- CONNECT BUTTON -->
+                <!-- AUFFÄLLIGER CONNECT BUTTON MIT MAUS & CS2 -->
                 <div class="mt-4 lg:mt-auto pt-4 border-t border-gray-700 shrink-0">
                     <button onclick="copyConnect()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3 rounded uppercase text-xs tracking-widest transition shadow-[0_0_15px_rgba(5,150,105,0.4)] border border-emerald-400 hover:scale-[1.02]">
                         🖱️ CS2 Server Connect kopieren
@@ -133,7 +133,7 @@
 </div>
 
 <script>
-    // --- HIER IST DEIN ECHTER KEY WIEDER DRIN! ---
+    // --- DATENBANK ---
     const SUPABASE_URL = 'https://ldsugaxwovooetmjegwt.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_RAVKlH8iHbbSxcd-7SV2qA_fj1ZkxOE';
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -151,7 +151,14 @@
         "Schattenboxer am Spawn", "Die Flash-Opfer", "Full-Buy Verlierer"
     ];
 
+    // HILFSFUNKTIONEN FÜR Q0R1 & LEVEL 10
+    function getEffectiveSkill(p) {
+        // Für die interne Mathematik ist Q0R1 immer eine 10 (egal was auf dem Display steht)
+        return p.name.toUpperCase() === "Q0R1" ? 10 : p.skill;
+    }
+
     function getHiddenPower(skill) {
+        // Ein echter Level 10er ist 11 Wert wert.
         if (skill >= 10) return 11;
         return skill;
     }
@@ -159,16 +166,23 @@
     async function fetchPlayers() {
         try {
             const { data, error } = await _supabase.from('players').select('*').order('name', { ascending: true });
-            if (error) console.error("Datenbank Fehler:", error);
             if (data) { players = data; renderUI(); }
-        } catch (e) { console.error("Fetch Fehler:", e); }
+        } catch (e) { console.error(e); }
     }
 
     async function addPlayer() {
         const n = document.getElementById('newName');
         const s = document.getElementById('newSkill');
         if (!n.value.trim()) return;
-        await _supabase.from('players').insert([{ name: n.value.trim(), skill: parseInt(s.value) }]);
+
+        let skillVal = parseInt(s.value);
+        
+        // Q0R1 darf nicht unter 10 angelegt werden
+        if (n.value.trim().toUpperCase() === "Q0R1" && skillVal < 10) {
+            skillVal = 10;
+        }
+
+        await _supabase.from('players').insert([{ name: n.value.trim(), skill: skillVal }]);
         n.value = ""; fetchPlayers();
     }
 
@@ -181,9 +195,25 @@
 
     async function editPlayer(id, currentName, currentSkill) {
         const newName = prompt("Name ändern:", currentName);
-        const newSkill = prompt("Level ändern (1-10):", currentSkill);
-        if (newName === null || newSkill === null) return;
-        await _supabase.from('players').update({ name: newName, skill: parseInt(newSkill) }).eq('id', id);
+        const newSkillInput = prompt("Level ändern (1-10):", currentSkill);
+        
+        if (newName === null || newSkillInput === null) return;
+        
+        let newSkill = parseInt(newSkillInput);
+
+        // EASTER EGG FÜR Q0R1
+        if (newName.toUpperCase() === "Q0R1") {
+            if (newSkill < 10) {
+                // Wenn er unter 10 gestuft wird, steigt er in Wirklichkeit auf (bis max 13)
+                newSkill = currentSkill >= 10 ? Math.min(currentSkill + 1, 13) : 11;
+                alert("Nö! Q0R1 lässt sich nicht abstufen. Level steigt!");
+            } else if (newSkill === 10) {
+                // Bei Eingabe von 10 wird er zurückgesetzt
+                newSkill = 10;
+            }
+        }
+
+        await _supabase.from('players').update({ name: newName, skill: newSkill }).eq('id', id);
         fetchPlayers();
     }
 
@@ -221,7 +251,8 @@
         let selected = Array.from(checks).map(c => ({ name: c.dataset.name, skill: parseInt(c.dataset.skill) }));
         if (selected.length < 2) return alert("Wähle mindestens 2 Spieler!");
 
-        const lvl10Count = selected.filter(p => p.skill === 10).length;
+        // WICHTIG: Er nutzt die getEffectiveSkill (Q0R1 = 10)
+        const lvl10Count = selected.filter(p => getEffectiveSkill(p) === 10).length;
 
         let bestDiff = Infinity;
         let candidates = [];
@@ -240,13 +271,14 @@
             }
 
             if (lvl10Count === 2) {
-                const a10s = tA.filter(p => p.skill === 10).length;
-                const b10s = tB.filter(p => p.skill === 10).length;
+                const a10s = tA.filter(p => getEffectiveSkill(p) === 10).length;
+                const b10s = tB.filter(p => getEffectiveSkill(p) === 10).length;
                 if (a10s !== 1 || b10s !== 1) continue; 
             }
             
-            let sA_hidden = tA.reduce((sum, p) => sum + getHiddenPower(p.skill), 0);
-            let sB_hidden = tB.reduce((sum, p) => sum + getHiddenPower(p.skill), 0);
+            // Versteckte Berechnung
+            let sA_hidden = tA.reduce((sum, p) => sum + getHiddenPower(getEffectiveSkill(p)), 0);
+            let sB_hidden = tB.reduce((sum, p) => sum + getHiddenPower(getEffectiveSkill(p)), 0);
             let diff = Math.abs(sA_hidden - sB_hidden);
             
             if (diff < bestDiff) {
@@ -283,8 +315,9 @@
     }
 
     function copyToDiscord() {
-        const sumA = teamA.reduce((a, b) => a + b.skill, 0);
-        const sumB = teamB.reduce((a, b) => a + b.skill, 0);
+        // Die Pwr Anzeige nutzt den EffectiveSkill (10), damit Q0R1's 13 nicht eingerechnet wird!
+        const sumA = teamA.reduce((a, b) => a + getEffectiveSkill(b), 0);
+        const sumB = teamB.reduce((a, b) => a + getEffectiveSkill(b), 0);
         let text = `**--- Noob Club Teams ---**\n\n**🔵 ${teamAName.toUpperCase()} (Pwr: ${sumA})**\n`;
         teamA.forEach(p => text += `• ${p.name} (Lvl ${p.skill})\n`);
         text += `\n**🟠 ${teamBName.toUpperCase()} (Pwr: ${sumB})**\n`;
@@ -300,9 +333,12 @@
 
     function displayTeams() {
         const resDiv = document.getElementById('result');
-        const sumA = teamA.reduce((a, b) => a + b.skill, 0);
-        const sumB = teamB.reduce((a, b) => a + b.skill, 0);
+        
+        // Die öffentliche Team-Pwr (Q0R1 zählt hier als 10)
+        const sumA = teamA.reduce((a, b) => a + getEffectiveSkill(b), 0);
+        const sumB = teamB.reduce((a, b) => a + getEffectiveSkill(b), 0);
 
+        // Die Liste zeigt aber den tatsächlichen p.skill (z.B. 13) an
         const renderList = (list, teamLabel) => list.map(p => `
             <li class="flex justify-between items-center bg-black/50 p-2 rounded my-1 text-xs border border-white/5 shadow-sm">
                 <span><span class="text-orange-400 font-bold mr-2">${p.skill}</span> ${p.name}</span>
